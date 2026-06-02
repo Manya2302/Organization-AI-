@@ -43,6 +43,12 @@ export const testConnection = async () => {
   } catch (error) {
     logger.warn('⚠️ PostgreSQL offline. Falling back to zero-install Local JSON Database mode.');
     isLocalJSONDb = true;
+    try {
+      const { seedLocalJSONDbIfEmpty } = await import('./jsonDb.js');
+      await seedLocalJSONDbIfEmpty();
+    } catch (e) {
+      logger.error('JSON DB seed failed:', e);
+    }
     return true;
   }
 };
@@ -59,6 +65,12 @@ export const connectDB = async () => {
   } catch (error) {
     logger.warn('⚠️ PostgreSQL offline. Initialized with Local JSON Database.');
     isLocalJSONDb = true;
+    try {
+      const { seedLocalJSONDbIfEmpty } = await import('./jsonDb.js');
+      await seedLocalJSONDbIfEmpty();
+    } catch (e) {
+      logger.error('JSON DB seed failed:', e);
+    }
     return null;
   }
 };

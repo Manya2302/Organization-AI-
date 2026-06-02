@@ -12,6 +12,7 @@ import { logger } from '../../infrastructure/logging/logger.js';
 import { query } from '../../infrastructure/database/connection.js';
 import path from 'path';
 import fs from 'fs/promises';
+import { enqueueDocumentJob } from '../../infrastructure/jobs/AIQueueService.js';
 
 // GET /documents — List all documents for organization
 export const listDocuments = async (req, res) => {
@@ -120,8 +121,13 @@ export const uploadDocument = async (req, res) => {
 
   const document = await documentRepository.create(documentData);
 
-  // Run OCR asynchronously (non-blocking)
-  processDocumentAsync(document.id, file.path, file.mimetype, file.originalname, req.organizationId, document);
+  // Queue AI background processing job
+  await enqueueDocumentJob({
+    documentId: document.id,
+    organizationId: req.organizationId,
+    userId: req.user.id,
+    documentName: document.name
+  });
 
   // Audit log
   await auditRepository.log({
@@ -171,8 +177,13 @@ export const uploadVersion = async (req, res) => {
     changeNotes: req.body.changeNotes || null
   }, req.organizationId);
 
-  // Re-run OCR on new version
-  processDocumentAsync(updated.id, file.path, file.mimetype, file.originalname, req.organizationId, updated);
+  // Queue AI background processing job for new version
+  await enqueueDocumentJob({
+    documentId: updated.id,
+    organizationId: req.organizationId,
+    userId: req.user.id,
+    documentName: updated.name
+  });
 
   await auditRepository.log({
     organizationId: req.organizationId,
@@ -263,40 +274,4 @@ export const downloadDocument = async (req, res) => {
   res.download(doc.filePath, doc.originalFilename);
 };
 
-// Background: OCR + Embedding + ChromaDB indexing
-const processDocumentAsync = async (docId, filePath, mimeType, fileName, orgId, doc) => {
-  try {
-    logger.info(`🔍 Processing document ${docId}: ${fileName}`);
 
-    // Step 1: Extract text with OCR
-    const ocrResult = await extractTextFromFile(filePath, mimeType, fileName);
-
-    if (ocrResult?.text) {
-      // Step 2: Save OCR text to DB
-      await documentRepository.updateOCR(docId, ocrResult.text, ocrResult.wordCount);
-      logger.info(`✅ OCR complete for ${fileName}: ${ocrResult.wordCount} words extracted`);
-
-      // Step 3: Generate embedding
-      const embedding = await generateEmbedding(ocrResult.text);
-
-      if (embedding) {
-        // Step 4: Index in ChromaDB
-        const indexed = await indexDocument(docId, embedding, {
-          name: doc.name,
-          category: doc.category,
-          department: doc.department,
-          organizationId: orgId,
-          tags: doc.tags,
-          uploadedAt: doc.createdAt
-        }, ocrResult.text);
-
-        if (indexed) {
-          await documentRepository.markVectorIndexed(docId, docId);
-          logger.info(`✅ Vector indexed document ${docId} in ChromaDB`);
-        }
-      }
-    }
-  } catch (error) {
-    logger.error(`Background processing failed for document ${docId}:`, error.message);
-  }
-};

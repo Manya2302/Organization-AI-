@@ -223,3 +223,97 @@ export const logout = async (req, res) => {
 export const getMe = async (req, res) => {
   res.json({ success: true, user: req.user.toPublicJSON() });
 };
+
+// POST /google-login
+export const googleLogin = async (req, res) => {
+  const { email, name, googleId } = req.body;
+
+  if (!email) {
+    throw createError('Email is required for Google login.', 400);
+  }
+
+  logger.info(`🌐 Google Login request received for email: ${email}`);
+
+  const { UserRepository } = await import('../../infrastructure/repositories/UserRepository.js');
+  const userRepo = new UserRepository();
+
+  let user = await userRepo.findByEmail(email);
+
+  if (!user) {
+    // Auto-register user into the default organization if they don't exist
+    const { isLocalJSONDb } = await import('../../infrastructure/database/connection.js');
+    const { readTable } = await import('../../infrastructure/database/jsonDb.js');
+    let orgId;
+
+    if (isLocalJSONDb) {
+      const orgs = await readTable('organizations');
+      orgId = orgs[0]?.id || 'acme-tech-org-uuid';
+    } else {
+      const dbRes = await query('SELECT id FROM organizations LIMIT 1');
+      orgId = dbRes.rows[0]?.id;
+    }
+
+    if (!orgId) {
+      throw createError('No organization exists to link Google account to.', 400);
+    }
+
+    user = await userRepo.create({
+      organizationId: orgId,
+      employeeId: 'EMP-G' + Math.floor(1000 + Math.random() * 9000),
+      name: name || email.split('@')[0],
+      email: email.toLowerCase(),
+      passwordHash: 'GOOGLE_EXTERNAL_OAUTH_FLOW', // passwordless
+      role: 'Employee',
+      isVerified: true,
+      joiningDate: new Date()
+    });
+
+    logger.info(`🆕 Auto-created Employee account via Google Login: ${email}`);
+  }
+
+  // Issue JWT tokens
+  const accessToken = authService.generateAccessToken({
+    id: user.id,
+    email: user.email,
+    role: user.role,
+    organizationId: user.organizationId || user.organization_id
+  });
+
+  const refreshToken = authService.generateRefreshToken();
+
+  res.cookie('refreshToken', refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+  });
+
+  // Log audit event
+  await auditRepository.log({
+    organizationId: user.organizationId || user.organization_id,
+    userId: user.id,
+    userName: user.name,
+    userRole: user.role,
+    action: 'Login',
+    resourceType: 'Session',
+    details: `Successful Google Single Sign-On (SSO)`,
+    ipAddress: req.ip,
+    userAgent: req.headers['user-agent']
+  });
+
+  res.json({
+    success: true,
+    accessToken,
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      organizationId: user.organizationId || user.organization_id,
+      department: user.department,
+      designation: user.designation,
+      employeeId: user.employee_id,
+      profilePhoto: user.profile_photo
+    }
+  });
+};

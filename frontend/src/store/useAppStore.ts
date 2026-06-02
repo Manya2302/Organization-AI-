@@ -62,7 +62,8 @@ interface AppState {
   user: User | null;
   employees: User[];
   departments: string[];
-  login: (role: User['role'], email: string, orgId?: string, empId?: string) => Promise<boolean>;
+  login: (role: User['role'], email: string, orgId?: string, empId?: string, password?: string, otpCode?: string) => Promise<boolean>;
+  googleLogin: (email: string, name: string) => Promise<boolean>;
   logout: () => void;
   registerOrganization: (data: any) => Promise<boolean>;
   registerEmployee: (data: any) => Promise<boolean>;
@@ -192,49 +193,153 @@ export const useAppStore = create<AppState>((set, get) => ({
     set({ theme: nextTheme });
   },
 
-  login: async (role, email, _orgId, empId) => {
-    // Mock login delay
-    await new Promise((resolve) => setTimeout(resolve, 800));
-
-    let loggedInUser: User | null = null;
-
-    if (role === 'SuperAdmin') {
-      loggedInUser = {
-        id: 'super-admin-0',
-        name: 'Super Admin',
-        email: email || 'admin@securevault.ai',
-        role: 'SuperAdmin',
-        designation: 'Global Platform Admin'
-      };
-    } else {
-      // Try to find in mock list
-      const matched = get().employees.find(e => e.email.toLowerCase() === email.toLowerCase());
-      if (matched) {
-        loggedInUser = matched;
-      } else {
-        loggedInUser = {
-          id: String(Date.now()),
-          employeeId: empId || 'EMP' + Math.floor(Math.random() * 1000),
-          name: email.split('@')[0].toUpperCase(),
-          email: email,
-          role: role,
-          department: role === 'EnterpriseAdmin' ? undefined : 'Engineering',
-          designation: role === 'EnterpriseAdmin' ? 'Administrator' : 'Consultant',
-          joiningDate: new Date().toISOString().split('T')[0],
-          mobileNumber: '+91 99999 88888',
-          skills: ['Office', 'Security']
+  login: async (role, email, orgId, empId, password, otpCode) => {
+    // 1. Try to login via Backend API
+    try {
+      const response = await fetch('http://localhost:5000/api/v1/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, role, organizationId: orgId, employeeId: empId, otp: otpCode })
+      });
+      const data = await response.json();
+      if (response.ok && data.success) {
+        if (data.accessToken) {
+          localStorage.setItem('sv_access_token', data.accessToken);
+        }
+        const userWithRole: User = {
+          id: data.user.id,
+          name: data.user.name,
+          email: data.user.email,
+          role: data.user.role,
+          department: data.user.department,
+          designation: data.user.designation,
+          employeeId: data.user.employeeId,
+          profilePhoto: data.user.profilePhoto
         };
+        set({ user: userWithRole });
+        get().addAuditLog('Login Successful', `User ${data.user.name} logged in successfully via API.`);
+        get().addNotification(`Welcome back, ${data.user.name}!`, 'success');
+        return true;
+      } else {
+        get().addNotification(data.message || 'Login failed', 'error');
+        return false;
       }
-    }
+    } catch (apiErr) {
+      // 2. Fallback to mock validation
+      console.warn('Backend API offline. Falling back to local mock authentication...');
+      await new Promise((resolve) => setTimeout(resolve, 800));
 
-    set({ user: loggedInUser });
-    get().addAuditLog('Login Successful', `User ${loggedInUser.name} logged in as ${role}. IP Address verified.`);
-    get().addNotification(`Welcome back, ${loggedInUser.name}!`, 'success');
-    return true;
+      let loggedInUser: User | null = null;
+      const lowerEmail = email.toLowerCase();
+
+      // Super Admin check
+      if (lowerEmail === 'manyaparikh23@gmail.com') {
+        if (password !== 'admin@123') {
+          get().addNotification('Invalid credentials for Super Admin.', 'error');
+          return false;
+        }
+        loggedInUser = {
+          id: 'super-admin-0',
+          name: 'Manya Parikh',
+          email: email,
+          role: 'SuperAdmin',
+          designation: 'Global Platform Admin'
+        };
+      } else {
+        const matched = get().employees.find(e => e.email.toLowerCase() === lowerEmail);
+        if (matched) {
+          // STRICT ROLE VALIDATION
+          if (role === 'EnterpriseAdmin' && matched.role !== 'EnterpriseAdmin') {
+            get().addNotification(`Login failed: ${email} is not authorized as an Enterprise Admin.`, 'error');
+            return false;
+          }
+          if (role === 'Employee' && matched.role === 'EnterpriseAdmin') {
+            get().addNotification(`Login failed: Enterprise Admin accounts must log in through the Admin Portal.`, 'error');
+            return false;
+          }
+          loggedInUser = matched;
+        } else {
+          loggedInUser = {
+            id: String(Date.now()),
+            employeeId: empId || 'EMP' + Math.floor(Math.random() * 1000),
+            name: email.split('@')[0].toUpperCase(),
+            email: email,
+            role: role,
+            department: role === 'EnterpriseAdmin' ? undefined : 'Engineering',
+            designation: role === 'EnterpriseAdmin' ? 'Administrator' : 'Consultant',
+            joiningDate: new Date().toISOString().split('T')[0],
+            mobileNumber: '+91 99999 88888',
+            skills: ['Office', 'Security']
+          };
+        }
+      }
+
+      set({ user: loggedInUser });
+      get().addAuditLog('Login Successful', `User ${loggedInUser.name} logged in as ${role}. (Local Mode)`);
+      get().addNotification(`Welcome back, ${loggedInUser.name}! (Local)`, 'success');
+      return true;
+    }
+  },
+
+  googleLogin: async (email, name) => {
+    try {
+      const response = await fetch('http://localhost:5000/api/v1/auth/google-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, name })
+      });
+      const data = await response.json();
+      if (response.ok && data.success) {
+        if (data.accessToken) {
+          localStorage.setItem('sv_access_token', data.accessToken);
+        }
+        const userWithRole: User = {
+          id: data.user.id,
+          name: data.user.name,
+          email: data.user.email,
+          role: data.user.role,
+          department: data.user.department,
+          designation: data.user.designation,
+          employeeId: data.user.employeeId,
+          profilePhoto: data.user.profilePhoto
+        };
+        set({ user: userWithRole });
+        get().addAuditLog('Login Successful', `User ${data.user.name} logged in via Google SSO.`);
+        get().addNotification(`Welcome back, ${data.user.name}! (Google)`, 'success');
+        return true;
+      } else {
+        get().addNotification(data.message || 'Google Login failed', 'error');
+        return false;
+      }
+    } catch (apiErr) {
+      console.warn('Backend API offline. Falling back to local Google login simulation...');
+      const loggedInUser: User = {
+        id: 'google-user-' + Date.now(),
+        name: name || email.split('@')[0].toUpperCase(),
+        email: email,
+        role: 'Employee',
+        department: 'Engineering',
+        designation: 'Software Developer',
+        joiningDate: new Date().toISOString().split('T')[0],
+        mobileNumber: '+91 99999 88888',
+        skills: ['Cloud', 'React']
+      };
+      set({ user: loggedInUser });
+      get().addAuditLog('Login Successful', `User ${loggedInUser.name} logged in via Google (Local Mode).`);
+      get().addNotification(`Welcome back, ${loggedInUser.name}! (Google Local)`, 'success');
+      return true;
+    }
   },
 
   logout: () => {
     const currentUser = get().user;
+    fetch('http://localhost:5000/api/v1/auth/logout', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('sv_access_token')}`
+      }
+    }).catch(() => {});
+    localStorage.removeItem('sv_access_token');
     if (currentUser) {
       get().addAuditLog('Logout Successful', `User ${currentUser.name} logged out.`);
     }
@@ -242,29 +347,66 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   registerOrganization: async (data) => {
-    await new Promise(r => setTimeout(r, 1200));
-    // Scaffold audit log
-    get().addAuditLog('Organization Registered', `New enterprise "${data.companyName}" registered. Admin account created.`);
-    return true;
+    try {
+      const response = await fetch('http://localhost:5000/api/v1/auth/register-organization', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      const resData = await response.json();
+      if (response.ok && resData.success) {
+        get().addAuditLog('Organization Registered', `New enterprise "${data.companyName}" registered via API.`);
+        get().addNotification(`Organization registered successfully!`, 'success');
+        return true;
+      } else {
+        get().addNotification(resData.message || 'Registration failed', 'error');
+        return false;
+      }
+    } catch (err) {
+      console.warn('Backend API offline. Using mock registration...');
+      await new Promise(r => setTimeout(r, 1200));
+      get().addAuditLog('Organization Registered', `New enterprise "${data.companyName}" registered. Admin account created (Local Mode).`);
+      get().addNotification(`Organization registered successfully! (Local)`, 'success');
+      return true;
+    }
   },
 
   registerEmployee: async (data) => {
-    await new Promise(r => setTimeout(r, 1000));
-    const newEmp: User = {
-      id: String(Date.now()),
-      employeeId: data.employeeId,
-      name: `${data.firstName} ${data.lastName}`,
-      email: data.email,
-      role: 'Employee',
-      department: data.department,
-      designation: data.designation,
-      joiningDate: new Date().toISOString().split('T')[0],
-      mobileNumber: data.mobileNumber,
-      skills: []
-    };
-    set(state => ({ employees: [...state.employees, newEmp] }));
-    get().addAuditLog('Employee Self-Registered', `Employee ${newEmp.name} registered and requested activation.`);
-    return true;
+    try {
+      const response = await fetch('http://localhost:5000/api/v1/auth/register-employee', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      const resData = await response.json();
+      if (response.ok && resData.success) {
+        get().addAuditLog('Employee Self-Registered', `Employee ${data.firstName} ${data.lastName} registered via API.`);
+        get().addNotification(`Self-registered successfully!`, 'success');
+        return true;
+      } else {
+        get().addNotification(resData.message || 'Registration failed', 'error');
+        return false;
+      }
+    } catch (err) {
+      console.warn('Backend API offline. Using mock registration...');
+      await new Promise(r => setTimeout(r, 1000));
+      const newEmp: User = {
+        id: String(Date.now()),
+        employeeId: data.employeeId,
+        name: `${data.firstName} ${data.lastName}`,
+        email: data.email,
+        role: 'Employee',
+        department: data.department,
+        designation: data.designation,
+        joiningDate: new Date().toISOString().split('T')[0],
+        mobileNumber: data.mobileNumber,
+        skills: []
+      };
+      set(state => ({ employees: [...state.employees, newEmp] }));
+      get().addAuditLog('Employee Self-Registered', `Employee ${newEmp.name} registered and requested activation (Local Mode).`);
+      get().addNotification(`Self-registered successfully! (Local)`, 'success');
+      return true;
+    }
   },
 
   addEmployee: (employee) => {

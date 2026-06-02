@@ -151,4 +151,34 @@ export const summarizeDocument = async (text, maxLength = 500) => {
   }
 };
 
-export default { checkOllamaHealth, generateEmbedding, generateRAGResponse, summarizeDocument };
+// Generate direct completion for general LLM queries
+export const generateOllamaCompletion = async (prompt, systemPrompt = '') => {
+  const messages = [];
+  if (systemPrompt) {
+    messages.push({ role: 'system', content: systemPrompt });
+  }
+  messages.push({ role: 'user', content: prompt });
+  
+  try {
+    const response = await fetch(`${OLLAMA_BASE}/api/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: MODEL,
+        messages,
+        stream: false,
+        options: { temperature: 0.2, num_predict: 1024 }
+      }),
+      signal: AbortSignal.timeout(60000)
+    });
+
+    if (!response.ok) throw new Error('Ollama completion request failed');
+    const data = await response.json();
+    return data.message?.content || '';
+  } catch (error) {
+    logger.warn(`Ollama completion failed: ${error.message}`);
+    return '';
+  }
+};
+
+export default { checkOllamaHealth, generateEmbedding, generateRAGResponse, summarizeDocument, generateOllamaCompletion };

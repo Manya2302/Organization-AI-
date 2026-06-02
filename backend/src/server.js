@@ -17,6 +17,8 @@ import { createRequire } from 'module';
 dotenv.config();
 
 import { logger } from './infrastructure/logging/logger.js';
+import { startWorker } from './infrastructure/jobs/DocumentProcessingWorker.js';
+import { getQueueStats } from './infrastructure/jobs/AIQueueService.js';
 import { connectDB, testConnection } from './infrastructure/database/connection.js';
 import { globalErrorHandler } from './api/middleware/errorHandler.js';
 import { rateLimiter } from './api/middleware/rateLimiter.js';
@@ -31,6 +33,7 @@ import aiRoutes from './api/routes/ai.routes.js';
 import ocrRoutes from './api/routes/ocr.routes.js';
 import searchRoutes from './api/routes/search.routes.js';
 import analyticsRoutes from './api/routes/analytics.routes.js';
+import intelligenceRoutes from './api/routes/intelligence.routes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -79,7 +82,7 @@ app.get('/health', async (req, res) => {
   res.json({
     status: 'operational',
     timestamp: new Date().toISOString(),
-    version: '1.0.0',
+    version: '2.0.0',
     environment: process.env.NODE_ENV,
     services: {
       database: dbConnected ? 'connected' : 'disconnected',
@@ -100,6 +103,7 @@ app.use('/api/v1/ai', aiRoutes);
 app.use('/api/v1/ocr', ocrRoutes);
 app.use('/api/v1/search', searchRoutes);
 app.use('/api/v1/analytics', analyticsRoutes);
+app.use('/api/v1/intelligence', intelligenceRoutes);
 
 // ────────── 404 Handler ──────────
 app.use('*', (req, res) => {
@@ -117,6 +121,7 @@ app.use(globalErrorHandler);
 const startServer = async () => {
   try {
     await connectDB();
+    startWorker(); // Start AI background processing worker
     logger.info('✅ PostgreSQL database connection established.');
 
     app.listen(PORT, () => {

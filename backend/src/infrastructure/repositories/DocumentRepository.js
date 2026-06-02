@@ -160,6 +160,10 @@ export class DocumentRepository {
       return doc;
     }
 
+    // Guard against non-UUID identifiers (e.g. mock IDs like 'doc-1')
+    const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!id || !UUID_REGEX.test(id)) return null;
+
     let sql = `
       SELECT d.*, u.name as uploaded_by FROM documents d
       LEFT JOIN users u ON d.owner_id = u.id

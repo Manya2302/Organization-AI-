@@ -4,6 +4,7 @@
 import { Router } from 'express';
 import { authenticate } from '../middleware/auth.middleware.js';
 import documentRepository from '../../infrastructure/repositories/DocumentRepository.js';
+import { logSearchMetrics } from '../../application/services/SearchEvaluationService.js';
 import { generateEmbedding } from '../../infrastructure/ai/OllamaService.js';
 import { semanticSearch } from '../../infrastructure/ai/ChromaService.js';
 import auditRepository from '../../infrastructure/repositories/AuditRepository.js';
@@ -77,7 +78,23 @@ router.get('/', async (req, res) => {
     ipAddress: req.ip
   });
 
-  res.json({ success: true, query: queryStr, results, count: results.length, searchType: type });
+  // Log RAG Search evaluation metrics
+  const metricId = await logSearchMetrics({
+    organizationId: req.organizationId,
+    userId: req.user.id,
+    searchQuery: queryStr,
+    resultsReturned: results.length,
+    success: true
+  });
+
+  res.json({ 
+    success: true, 
+    query: queryStr, 
+    results, 
+    count: results.length, 
+    searchType: type,
+    searchMetricId: metricId 
+  });
 });
 
 export default router;

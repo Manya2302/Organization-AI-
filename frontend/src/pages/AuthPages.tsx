@@ -159,7 +159,7 @@ const RotatingSidebar: React.FC<{ side: 'left' | 'right' }> = ({ side }) => {
 
 // ─── LOGIN PAGE ───────────────────────────────────────────
 export const LoginPage: React.FC = () => {
-  const { login } = useAppStore()
+  const { login, googleLogin } = useAppStore()
   const navigate = useNavigate()
   
   // Tab roles: Employee, EnterpriseAdmin (SuperAdmin extracted)
@@ -173,7 +173,76 @@ export const LoginPage: React.FC = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const handleSendOtp = (e: React.FormEvent) => {
+  // Google Login modal simulation state
+  const [showGoogleModal, setShowGoogleModal] = useState(false)
+  const [googleEmail, setGoogleEmail] = useState('')
+  const [googleName, setGoogleName] = useState('')
+
+  const parseJwt = (token: string) => {
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        window
+          .atob(base64)
+          .split('')
+          .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
+      );
+      return JSON.parse(jsonPayload);
+    } catch (e) {
+      return null;
+    }
+  };
+
+  const handleCredentialResponse = async (response: any) => {
+    const decoded = parseJwt(response.credential);
+    if (decoded && decoded.email) {
+      setError('');
+      setLoading(true);
+      try {
+        const success = await googleLogin(decoded.email, decoded.name || decoded.given_name || '');
+        if (success) {
+          navigate('/dashboard');
+        } else {
+          setError('Google Sign-In failed to link account.');
+        }
+      } catch (err) {
+        setError('Google Single Sign-On server error.');
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  useEffect(() => {
+    const initializeGoogleSignIn = () => {
+      if (typeof window !== 'undefined' && (window as any).google) {
+        (window as any).google.accounts.id.initialize({
+          client_id: "249345269146-mlfeeepf026mu7h8al8mhoinqhorgrmc.apps.googleusercontent.com",
+          callback: handleCredentialResponse
+        });
+        (window as any).google.accounts.id.renderButton(
+          document.getElementById("google-signin-btn"),
+          { theme: "outline", size: "large", width: 380 }
+        );
+      }
+    };
+
+    if (!document.getElementById('google-gsi-script')) {
+      const script = document.createElement('script');
+      script.id = 'google-gsi-script';
+      script.src = 'https://accounts.google.com/gsi/client';
+      script.async = true;
+      script.defer = true;
+      script.onload = initializeGoogleSignIn;
+      document.head.appendChild(script);
+    } else {
+      initializeGoogleSignIn();
+    }
+  }, []);
+
+  const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!email || !password) {
       setError('Please fill in credentials.')
@@ -181,32 +250,60 @@ export const LoginPage: React.FC = () => {
     }
     setError('')
     setLoading(true)
-    setTimeout(() => {
-      setLoading(false)
+    try {
+      const response = await fetch('http://localhost:5000/api/v1/auth/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, purpose: 'login' })
+      });
+      const data = await response.json();
+      if (response.ok && data.success) {
+        setOtpSent(true)
+      } else {
+        // Fallback for offline backend
+        setOtpSent(true)
+      }
+    } catch (err) {
       setOtpSent(true)
-    }, 800)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleVerifyAndLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     setLoading(true)
-    
-    if (otpSent && otpCode !== '123456') {
-      setError('Invalid OTP code. Try entering 123456.')
-      setLoading(false)
-      return
-    }
 
     try {
-      const success = await login(activeTab, email, orgId, empId)
+      const success = await login(activeTab, email, orgId, empId, password, otpCode)
       if (success) {
         navigate('/dashboard')
       } else {
-        setError('Login failed. Please check your credentials.')
+        setError('Login failed. Please check your credentials, role, or OTP.')
       }
     } catch (err) {
       setError('Authentication server error.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleGoogleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!googleEmail) return
+    setError('')
+    setLoading(true)
+    try {
+      const success = await googleLogin(googleEmail, googleName)
+      if (success) {
+        setShowGoogleModal(false)
+        navigate('/dashboard')
+      } else {
+        setError('Google Single Sign-On failed.')
+      }
+    } catch (err) {
+      setError('Google Single Sign-On server error.')
     } finally {
       setLoading(false)
     }
@@ -262,7 +359,7 @@ export const LoginPage: React.FC = () => {
             <form onSubmit={handleSendOtp} className="space-y-4 text-left">
               {activeTab === 'EnterpriseAdmin' && (
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-500 dark:text-gray-400 uppercase mb-1.5">Organization ID</label>
+                  <label className="block text-[10px] font-bold text-slate-550 uppercase mb-1.5">Organization ID</label>
                   <div className="relative">
                     <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400"><Building className="h-4 w-4" /></span>
                     <input
@@ -276,7 +373,7 @@ export const LoginPage: React.FC = () => {
 
               {activeTab === 'Employee' && (
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-500 dark:text-gray-400 uppercase mb-1.5">Employee ID</label>
+                  <label className="block text-[10px] font-bold text-slate-550 uppercase mb-1.5">Employee ID</label>
                   <div className="relative">
                     <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400"><User className="h-4 w-4" /></span>
                     <input
@@ -289,7 +386,7 @@ export const LoginPage: React.FC = () => {
               )}
 
               <div>
-                <label className="block text-[10px] font-bold text-slate-500 dark:text-gray-400 uppercase mb-1.5">Work Email</label>
+                <label className="block text-[10px] font-bold text-slate-550 uppercase mb-1.5">Work Email</label>
                 <div className="relative">
                   <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400"><Mail className="h-4 w-4" /></span>
                   <input
@@ -302,7 +399,7 @@ export const LoginPage: React.FC = () => {
 
               <div>
                 <div className="flex justify-between items-center mb-1.5">
-                  <label className="block text-[10px] font-bold text-slate-500 dark:text-gray-400 uppercase">Password</label>
+                  <label className="block text-[10px] font-bold text-slate-550 uppercase">Password</label>
                   <Link to="/forgot-password" className="text-[10px] text-blue-600 dark:text-blue-400 hover:underline">Forgot password?</Link>
                 </div>
                 <div className="relative">
@@ -324,12 +421,12 @@ export const LoginPage: React.FC = () => {
             </form>
           ) : (
             <form onSubmit={handleVerifyAndLogin} className="space-y-4 text-left">
-              <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800 text-blue-805 dark:text-slate-350 p-3 rounded-lg text-xs leading-relaxed">
+              <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800 text-blue-800 dark:text-slate-300 p-3 rounded-lg text-xs leading-relaxed">
                 We sent a verification OTP to <strong>{email}</strong>. Enter <strong>123456</strong> to proceed.
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold text-slate-500 dark:text-gray-400 uppercase mb-1.5">OTP Code</label>
+                <label className="block text-[10px] font-bold text-slate-550 uppercase mb-1.5">OTP Code</label>
                 <input
                   type="text" required placeholder="123456" maxLength={6}
                   value={otpCode} onChange={e => setOtpCode(e.target.value)}
@@ -353,6 +450,17 @@ export const LoginPage: React.FC = () => {
             </form>
           )}
 
+          {/* Social Google Login Button */}
+          <div className="space-y-4">
+            <div className="relative flex py-2 items-center">
+              <div className="flex-grow border-t border-slate-200 dark:border-white/10"></div>
+              <span className="flex-shrink mx-4 text-[10px] text-slate-400 font-bold uppercase tracking-wider">Or continue with</span>
+              <div className="flex-grow border-t border-slate-200 dark:border-white/10"></div>
+            </div>
+
+            <div className="flex justify-center w-full min-h-[44px]" id="google-signin-btn"></div>
+          </div>
+
           {activeTab === 'Employee' && (
             <div className="text-center pt-2 text-[11px] text-slate-500 dark:text-gray-400">
               Don't have an account? <Link to="/register-employee" className="text-blue-600 dark:text-blue-400 font-semibold hover:underline">Self Register</Link>
@@ -365,6 +473,85 @@ export const LoginPage: React.FC = () => {
           Authorized access only. All activities within this node are encrypted and logged directly in PostgreSQL.
         </div>
       </div>
+
+      {/* Google OAuth Simulation Modal */}
+      {showGoogleModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 text-slate-800 dark:text-gray-100">
+          <div className="w-full max-w-sm bg-white dark:bg-[#0c101d] border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl p-6 space-y-4 text-left">
+            <div>
+              <h3 className="font-display font-bold text-base text-slate-900 dark:text-white">Google Single Sign-On</h3>
+              <p className="text-[11px] text-slate-500 dark:text-gray-400">Select or enter a Google account to authorize</p>
+            </div>
+            
+            <div className="space-y-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setGoogleEmail('manyaparikh23@gmail.com')
+                  setGoogleName('Manya Parikh')
+                }}
+                className="w-full p-3 text-xs rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 hover:border-blue-500 text-left transition-colors cursor-pointer"
+              >
+                <div className="font-semibold text-slate-950 dark:text-white">Manya Parikh</div>
+                <div className="text-[10px] text-slate-500 dark:text-gray-400">manyaparikh23@gmail.com (Super Admin)</div>
+              </button>
+              
+              <button
+                type="button"
+                onClick={() => {
+                  setGoogleEmail('priya@cognivault.ai')
+                  setGoogleName('Priya Patel')
+                }}
+                className="w-full p-3 text-xs rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 hover:border-blue-500 text-left transition-colors cursor-pointer"
+              >
+                <div className="font-semibold text-slate-950 dark:text-white">Priya Patel</div>
+                <div className="text-[10px] text-slate-500 dark:text-gray-400">priya@cognivault.ai (Department Manager)</div>
+              </button>
+            </div>
+
+            <div className="relative flex py-1 items-center">
+              <div className="flex-grow border-t border-slate-200 dark:border-white/10"></div>
+              <span className="flex-shrink mx-2 text-[9px] text-slate-400 font-bold uppercase tracking-wider">Or Use Custom Email</span>
+              <div className="flex-grow border-t border-slate-200 dark:border-white/10"></div>
+            </div>
+
+            <form onSubmit={handleGoogleSubmit} className="space-y-3">
+              <div>
+                <label className="block text-[9px] font-bold text-slate-550 uppercase mb-1">Email Address</label>
+                <input
+                  type="email" required placeholder="john.doe@gmail.com"
+                  value={googleEmail} onChange={e => setGoogleEmail(e.target.value)}
+                  className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-3 py-2 text-xs text-slate-800 dark:text-white focus:outline-none focus:border-blue-600"
+                />
+              </div>
+              <div>
+                <label className="block text-[9px] font-bold text-slate-550 uppercase mb-1">Display Name</label>
+                <input
+                  type="text" placeholder="John Doe"
+                  value={googleName} onChange={e => setGoogleName(e.target.value)}
+                  className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-3 py-2 text-xs text-slate-800 dark:text-white focus:outline-none focus:border-blue-600"
+                />
+              </div>
+
+              <div className="flex items-center gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowGoogleModal(false)}
+                  className="flex-1 py-2 text-xs rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-gray-300 font-semibold cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2 text-xs rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold cursor-pointer"
+                >
+                  Sign In
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Right Column (Rotating Sidebar) */}
       <RotatingSidebar side="right" />

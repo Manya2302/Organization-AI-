@@ -13,7 +13,7 @@ interface NodeLocation {
 }
 
 const locations: NodeLocation[] = [
-  { city: 'Bengaluru', region: 'Primary Core Cluster', ip: '10.140.0.4', docs: '849,203', status: 'Healthy', ping: '0.4ms', x: 65, y: 68 },
+  { city: 'Ahmedabad', region: 'Primary Core Cluster', ip: '10.140.0.4', docs: '849,203', status: 'Healthy', ping: '0.4ms', x: 65, y: 68 },
   { city: 'Mumbai', region: 'Edge Replication Node', ip: '10.142.12.8', docs: '128,495', status: 'Healthy', ping: '1.2ms', x: 55, y: 55 },
   { city: 'New Delhi', region: 'Gov & Compliance Node', ip: '10.144.3.1', docs: '344,091', status: 'Healthy', ping: '2.1ms', x: 62, y: 35 },
   { city: 'Singapore', region: 'APAC Archive Node', ip: '10.150.8.2', docs: '1,495,200', status: 'Syncing', ping: '28ms', x: 88, y: 80 }
@@ -35,10 +35,10 @@ export const InteractiveMap: React.FC = () => {
             </pattern>
           </defs>
           <rect width="100" height="100" fill="url(#map-grid)" />
-          
+
           {/* Abstract India/APAC border representation */}
-          <path d="M45,20 Q52,15 60,25 T70,35 T72,55 T65,80 T50,85 T40,65 T38,45 Z" 
-                fill="none" stroke="currentColor" strokeWidth="0.8" strokeDasharray="3 3" className="text-blue-500/20 dark:text-blue-500/10" />
+          <path d="M45,20 Q52,15 60,25 T70,35 T72,55 T65,80 T50,85 T40,65 T38,45 Z"
+            fill="none" stroke="currentColor" strokeWidth="0.8" strokeDasharray="3 3" className="text-blue-500/20 dark:text-blue-500/10" />
 
           {/* Sync Connection lines between selected node and other nodes */}
           {locations.map((loc, idx) => (
@@ -94,7 +94,7 @@ export const InteractiveMap: React.FC = () => {
       <div className="flex flex-col justify-between">
         <div className="space-y-6">
           <div>
-            <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-1.5 block">Node Selected</span>
+            <span className="badge-brand text-[10px] mb-2 bg-blue-500/10 border-blue-500/20 text-blue-600 dark:text-blue-400">Node Selected</span>
             <h3 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
               <Server className="w-5 h-5 text-blue-500" />
               {selectedNode.city} Node
@@ -117,11 +117,10 @@ export const InteractiveMap: React.FC = () => {
             </div>
             <div className="flex justify-between items-center">
               <span className="text-slate-500 dark:text-slate-400">Replication Integrity</span>
-              <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${
-                selectedNode.status === 'Healthy' 
-                  ? 'bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20' 
-                  : 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border border-yellow-500/20'
-              }`}>
+              <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${selectedNode.status === 'Healthy'
+                ? 'bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20'
+                : 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border border-yellow-500/20'
+                }`}>
                 {selectedNode.status}
               </span>
             </div>
@@ -132,7 +131,7 @@ export const InteractiveMap: React.FC = () => {
         <div className="mt-8 border-t border-slate-200/60 dark:border-slate-800/60 pt-4">
           <div className="flex items-center gap-2 text-[12px] text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-900/60 p-3 rounded-xl border border-slate-200/50 dark:border-slate-800/50">
             <Globe className="text-blue-500 w-4 h-4 flex-shrink-0" />
-            <span>CogniVault database replication runs in multi-primary cluster mode for 100% data durability.</span>
+            <span>SecureVault database replication runs in multi-primary cluster mode for 100% data durability.</span>
           </div>
         </div>
       </div>

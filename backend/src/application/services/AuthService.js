@@ -9,6 +9,37 @@ import { query, isLocalJSONDb } from '../../infrastructure/database/connection.j
 import { readTable, writeTable, insertRow, updateRow } from '../../infrastructure/database/jsonDb.js';
 import userRepository from '../../infrastructure/repositories/UserRepository.js';
 import { logger } from '../../infrastructure/logging/logger.js';
+import emailService from '../../infrastructure/services/EmailService.js';
+
+// ── In-memory token → user cache (TTL = 5 min) to avoid DB hit on every request ──
+const _tokenCache = new Map(); // token -> { user, expiresAt }
+const TOKEN_CACHE_TTL_MS = 5 * 60 * 1000;
+const MAX_CACHE_SIZE = 1000;
+
+const _getCachedUser = (token) => {
+  const entry = _tokenCache.get(token);
+  if (!entry) return null;
+  if (Date.now() > entry.expiresAt) {
+    _tokenCache.delete(token);
+    return null;
+  }
+  return entry.user;
+};
+
+const _setCachedUser = (token, user) => {
+  if (_tokenCache.size >= MAX_CACHE_SIZE) {
+    // Evict oldest entry
+    const firstKey = _tokenCache.keys().next().value;
+    _tokenCache.delete(firstKey);
+  }
+  _tokenCache.set(token, { user, expiresAt: Date.now() + TOKEN_CACHE_TTL_MS });
+};
+
+const _invalidateCacheForUser = (userId) => {
+  for (const [token, entry] of _tokenCache.entries()) {
+    if (entry.user?.id === userId) _tokenCache.delete(token);
+  }
+};
 
 export class AuthService {
   // Generate JWT access token
@@ -86,7 +117,12 @@ export class AuthService {
       );
     }
 
-    logger.info(`OTP generated for ${email} (purpose: ${purpose}) — In production, send via email/SMS`);
+    logger.info(`OTP generated for ${email} (purpose: ${purpose}) — Sending via EmailService...`);
+    // Send email asynchronously
+    emailService.sendOTP(email, otp, purpose).catch(err => {
+      logger.error(`Error sending email async:`, err);
+    });
+
     // In development, log OTP for testing
     if (process.env.NODE_ENV === 'development' || isLocalJSONDb) {
       logger.info(`🔑 DEV OTP for ${email}: ${otp}`);
@@ -272,20 +308,33 @@ export class AuthService {
     return { success: true, accessToken, organization: org, user: adminUser.toPublicJSON() };
   }
 
-  // Verify JWT and return user data
+  // Verify JWT and return user data (with in-memory cache)
   async verifyToken(token) {
     try {
+      // 1. Check cache first — avoids DB hit on every request
+      const cached = _getCachedUser(token);
+      if (cached) return cached;
+
+      // 2. Validate JWT signature + expiry
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+      // 3. Fetch fresh user from DB
       const user = await userRepository.findById(decoded.userId);
       if (!user || !user.isActive) return null;
+
+      // 4. Cache for next requests
+      _setCachedUser(token, user);
       return user;
     } catch {
       return null;
     }
   }
 
-  // Logout: revoke refresh token
+  // Logout: revoke refresh token + invalidate token cache
   async logout(userId) {
+    // Invalidate all cached tokens for this user on logout
+    _invalidateCacheForUser(userId);
+
     if (isLocalJSONDb) {
       const tokens = await readTable('refresh_tokens');
       const updated = tokens.map(t => {

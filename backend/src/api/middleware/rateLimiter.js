@@ -4,11 +4,16 @@
 import rateLimit from 'express-rate-limit';
 import { logger } from '../../infrastructure/logging/logger.js';
 
+const isLocalIP = (ip) => {
+  return !ip || ip === '::1' || ip === '127.0.0.1' || ip === '::ffff:127.0.0.1' || ip === 'localhost';
+};
+
 export const rateLimiter = rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MINUTES || '15') * 60 * 1000,
   max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100'),
   standardHeaders: true,
   legacyHeaders: false,
+  skip: (req) => isLocalIP(req.ip),
   handler: (req, res) => {
     logger.warn(`Rate limit exceeded for IP: ${req.ip} on ${req.path}`);
     res.status(429).json({
@@ -25,5 +30,6 @@ export const authRateLimiter = rateLimit({
   max: 10,
   message: { success: false, message: 'Too many authentication attempts. Please try again in 15 minutes.' },
   standardHeaders: true,
-  legacyHeaders: false
+  legacyHeaders: false,
+  skip: (req) => isLocalIP(req.ip)
 });

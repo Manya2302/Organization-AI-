@@ -1,22 +1,26 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { Link, Routes, Route, useNavigate } from 'react-router-dom'
+import { Link, Routes, Route, useNavigate, Navigate } from 'react-router-dom'
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, BarChart, Bar, Cell } from 'recharts'
 import { 
   FileText, Users, HardDrive, ShieldAlert, UploadCloud, Search, Trash2, RotateCcw, 
   Trash, UserPlus, CheckCircle, Activity, Key, Brain, Send, 
-  ChevronRight, RefreshCcw, FolderOpen, Eye, Info
+  ChevronRight, RefreshCcw, FolderOpen, Eye, Info, Network, TrendingUp,
+  Sun, Moon, LogOut
 } from 'lucide-react'
 import { useAppStore } from '../store/useAppStore'
 import type { Document } from '../store/useAppStore'
+import { DocumentIntelligencePage, SimilarDocumentsPage, AIInsightsPage, AIQueuePage } from './AIPages'
 
 // --- DASHBOARD CONTAINER & NAVIGATION ---
 export const DashboardLayout: React.FC = () => {
-  const { user } = useAppStore()
+  const { user, theme, toggleTheme, logout } = useAppStore()
   const navigate = useNavigate()
 
   React.useEffect(() => {
     if (!user) {
       navigate('/login')
+    } else if (user.role === 'Employee' && (window.location.pathname === '/dashboard' || window.location.pathname === '/dashboard/')) {
+      navigate('/dashboard/documents')
     }
   }, [user, navigate])
 
@@ -32,23 +36,41 @@ export const DashboardLayout: React.FC = () => {
         </div>
 
         <nav className="flex flex-col gap-1">
-          <Link to="/dashboard" className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold text-gray-300 hover:text-white hover:bg-white/5 transition-colors">
-            <Activity className="h-4 w-4 text-brand-secondary" /> Console Analytics
-          </Link>
-          <Link to="/dashboard/documents" className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold text-gray-300 hover:text-white hover:bg-white/5 transition-colors">
+          {user.role !== 'Employee' && (
+            <Link to="/dashboard" className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white transition-all">
+              <Activity className="h-4 w-4 text-brand-secondary" /> Console Analytics
+            </Link>
+          )}
+          <Link to="/dashboard/documents" className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white transition-all">
             <FolderOpen className="h-4 w-4 text-brand-accent" /> Documents Repository
           </Link>
           {user.role !== 'Employee' && (
-            <Link to="/dashboard/team" className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold text-gray-300 hover:text-white hover:bg-white/5 transition-colors">
+            <Link to="/dashboard/team" className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white transition-all">
               <Users className="h-4 w-4 text-brand-primary" /> Employees / Team
             </Link>
           )}
-          <Link to="/dashboard/audit" className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold text-gray-300 hover:text-white hover:bg-white/5 transition-colors">
-            <ShieldAlert className="h-4 w-4 text-orange-400" /> Security Audit Logs
-          </Link>
-          <Link to="/dashboard/profile" className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold text-gray-300 hover:text-white hover:bg-white/5 transition-colors">
+          {user.role !== 'Employee' && (
+            <Link to="/dashboard/audit" className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white transition-all">
+              <ShieldAlert className="h-4 w-4 text-orange-400" /> Security Audit Logs
+            </Link>
+          )}
+          <Link to="/dashboard/profile" className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white transition-all">
             <Key className="h-4 w-4 text-green-400" /> My Security Profile
           </Link>
+          <div className="border-t border-slate-200 dark:border-white/5 my-1" />
+          {user.role !== 'Employee' && (
+            <Link to="/dashboard/insights" className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white transition-all">
+              <TrendingUp className="h-4 w-4 text-brand-secondary" /> AI Insights
+            </Link>
+          )}
+          <Link to="/dashboard/similar" className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white transition-all">
+            <Network className="h-4 w-4 text-brand-accent" /> Similarity Hub
+          </Link>
+          {user.role !== 'Employee' && (
+            <Link to="/dashboard/queue" className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white transition-all">
+              <Activity className="h-4 w-4 text-orange-400" /> AI Queue Status
+            </Link>
+          )}
         </nav>
 
         {/* AI Prompt Box Widget */}
@@ -60,16 +82,62 @@ export const DashboardLayout: React.FC = () => {
             Qwen3 8B model running locally. Free semantic RAG searches activated.
           </p>
         </div>
+
+        {/* User Theme and Logout Panel */}
+        <div className="pt-3 border-t border-white/5 space-y-2">
+          <div className="flex items-center justify-between px-3 py-0.5 text-slate-400 text-[10px]">
+            <span className="font-semibold uppercase tracking-wider">SYSTEM NODE</span>
+            <span className="font-mono text-green-400">ONLINE</span>
+          </div>
+
+          <div className="flex gap-1.5">
+            <button
+              onClick={toggleTheme}
+              className="flex-1 flex items-center justify-center gap-1 px-2 py-2 rounded-xl border border-white/5 bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white text-[10px] font-bold transition-all cursor-pointer"
+              title="Toggle system theme"
+            >
+              {theme === 'dark' ? (
+                <>
+                  <Sun className="h-3 w-3 text-yellow-400" /> Light Mode
+                </>
+              ) : (
+                <>
+                  <Moon className="h-3 w-3 text-blue-400" /> Dark Mode
+                </>
+              )}
+            </button>
+
+            <button
+              onClick={() => {
+                logout();
+                navigate('/login');
+              }}
+              className="flex-1 flex items-center justify-center gap-1 px-2 py-2 rounded-xl border border-red-500/20 bg-red-500/5 hover:bg-red-500/20 text-red-400 hover:text-red-300 text-[10px] font-bold transition-all cursor-pointer"
+              title="Sign out of current node"
+            >
+              <LogOut className="h-3 w-3" /> Sign Out
+            </button>
+          </div>
+        </div>
       </aside>
 
       {/* Console Area */}
-      <main className="flex-1 bg-dark-bg p-6 overflow-y-auto">
+      <main className="flex-1 bg-slate-50 dark:bg-dark-bg p-6 overflow-y-auto text-slate-800 dark:text-gray-100 transition-colors duration-300">
         <Routes>
-          <Route path="/" element={<ConsoleAnalytics />} />
+          {user.role !== 'Employee' ? (
+            <Route path="/" element={<ConsoleAnalytics />} />
+          ) : (
+            <Route path="/" element={<Navigate to="/dashboard/documents" replace />} />
+          )}
           <Route path="/documents" element={<DocumentsRepository />} />
           {user.role !== 'Employee' && <Route path="/team" element={<TeamManagement />} />}
-          <Route path="/audit" element={<AuditLogsView />} />
+          {user.role !== 'Employee' && <Route path="/audit" element={<AuditLogsView />} />}
           <Route path="/profile" element={<ProfileView />} />
+          <Route path="/intelligence/:docId" element={<DocumentIntelligencePage />} />
+          <Route path="/similar" element={<SimilarDocumentsPage />} />
+          {user.role !== 'Employee' && <Route path="/insights" element={<AIInsightsPage />} />}
+          {user.role !== 'Employee' && <Route path="/queue" element={<AIQueuePage />} />}
+          <Route path="*" element={<Navigate to="/dashboard/documents" replace />} />
         </Routes>
       </main>
 
@@ -81,7 +149,13 @@ export const DashboardLayout: React.FC = () => {
 
 // --- 1. CONSOLE ANALYTICS ---
 const ConsoleAnalytics: React.FC = () => {
-  const { documents, employees, auditLogs } = useAppStore()
+  const { documents, employees, auditLogs, theme } = useAppStore()
+  const isDark = theme === 'dark'
+  const gridStroke = isDark ? '#161a29' : '#e2e8f0'
+  const tooltipBg = isDark ? '#0b0d16' : '#ffffff'
+  const tooltipBorder = isDark ? '#161a29' : '#cbd5e1'
+  const tooltipColor = isDark ? '#fff' : '#0f172a'
+  const textStroke = isDark ? '#6b7280' : '#475569'
 
   const totalDocs = documents.filter(d => !d.isDeleted).length
   const totalEmployees = employees.length
@@ -169,10 +243,10 @@ const ConsoleAnalytics: React.FC = () => {
                     <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#161a29" />
-                <XAxis dataKey="name" stroke="#6b7280" />
-                <YAxis stroke="#6b7280" />
-                <Tooltip contentStyle={{ backgroundColor: '#0b0d16', border: '1px solid #161a29', borderRadius: '8px', color: '#fff' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
+                <XAxis dataKey="name" stroke={textStroke} />
+                <YAxis stroke={textStroke} />
+                <Tooltip contentStyle={{ backgroundColor: tooltipBg, border: `1px solid ${tooltipBorder}`, borderRadius: '8px', color: tooltipColor }} />
                 <Area type="monotone" dataKey="count" stroke="#6366f1" fillOpacity={1} fill="url(#colorUploads)" />
               </AreaChart>
             </ResponsiveContainer>
@@ -184,10 +258,10 @@ const ConsoleAnalytics: React.FC = () => {
           <div className="h-60 w-full text-xs">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={storageByDeptData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#161a29" />
-                <XAxis dataKey="name" stroke="#6b7280" />
-                <YAxis stroke="#6b7280" />
-                <Tooltip contentStyle={{ backgroundColor: '#0b0d16', border: '1px solid #161a29', borderRadius: '8px', color: '#fff' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
+                <XAxis dataKey="name" stroke={textStroke} />
+                <YAxis stroke={textStroke} />
+                <Tooltip contentStyle={{ backgroundColor: tooltipBg, border: `1px solid ${tooltipBorder}`, borderRadius: '8px', color: tooltipColor }} />
                 <Bar dataKey="size" fill="#06b6d4" radius={[4, 4, 0, 0]}>
                   {storageByDeptData.map((_, index) => (
                     <Cell key={`cell-${index}`} fill={index === 0 ? '#6366f1' : index === 1 ? '#06b6d4' : '#a855f7'} />
@@ -425,6 +499,13 @@ const DocumentsRepository: React.FC = () => {
                   >
                     <Eye className="h-3.5 w-3.5" />
                   </button>
+                  <Link 
+                    to={`/dashboard/intelligence/${doc.id}`}
+                    className="p-1.5 rounded-lg bg-brand-primary/10 hover:bg-brand-primary/20 text-brand-secondary transition-colors"
+                    title="AI Intelligence Analysis"
+                  >
+                    <Brain className="h-3.5 w-3.5" />
+                  </Link>
                   {showTrash ? (
                     <button 
                       onClick={() => restoreDocument(doc.id)}
@@ -480,6 +561,13 @@ const DocumentsRepository: React.FC = () => {
                     <div>Uploaded By: <strong>{selectedDoc.uploadedBy}</strong></div>
                     <div>Date: <strong>{selectedDoc.uploadedAt}</strong></div>
                   </div>
+                  <Link 
+                    to={`/dashboard/intelligence/${selectedDoc.id}`}
+                    onClick={() => setSelectedDoc(null)}
+                    className="w-full mt-2 py-2 rounded-xl bg-brand-primary/20 hover:bg-brand-primary/30 border border-brand-primary/30 text-brand-secondary font-bold text-xs flex items-center justify-center gap-1.5 transition-colors"
+                  >
+                    <Brain className="h-4 w-4" /> Open AI Intelligence Center
+                  </Link>
                 </div>
 
                 {/* Upload version */}

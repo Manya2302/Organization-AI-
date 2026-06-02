@@ -67,6 +67,7 @@ docker run -d -p 8000:8000 -v chromadb_data:/chroma/chroma chromadb/chroma
 
 | Role | Email | Password |
 |------|-------|----------|
+| Super Admin | manyaparikh23@gmail.com | admin@123 |
 | Enterprise Admin | alok@acmetech.com | SecureVault@2025 |
 | Department Manager | priya@acmetech.com | SecureVault@2025 |
 | Employee | rohan@acmetech.com | SecureVault@2025 |

@@ -34,6 +34,11 @@ export class UserRepository {
         org_name: org ? org.name : null
       });
     }
+
+    // Guard against non-UUID identifiers
+    const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!id || !UUID_REGEX.test(id)) return null;
+
     const result = await query(
       'SELECT u.*, o.name as org_name FROM users u LEFT JOIN organizations o ON u.organization_id = o.id WHERE u.id = $1',
       [id]
