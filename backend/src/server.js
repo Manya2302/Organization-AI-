@@ -34,6 +34,10 @@ import ocrRoutes from './api/routes/ocr.routes.js';
 import searchRoutes from './api/routes/search.routes.js';
 import analyticsRoutes from './api/routes/analytics.routes.js';
 import intelligenceRoutes from './api/routes/intelligence.routes.js';
+import knowledgeRoutes from './api/routes/knowledge.routes.js';
+import graphRoutes from './api/routes/graph.routes.js';
+import memoryRoutes from './api/routes/memory.routes.js';
+import complianceRoutes from './api/routes/compliance.routes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -82,7 +86,8 @@ app.get('/health', async (req, res) => {
   res.json({
     status: 'operational',
     timestamp: new Date().toISOString(),
-    version: '2.0.0',
+    version: '4.0.0',
+    phase: 'Phase 4 — Compliance Intelligence & Audit Readiness',
     environment: process.env.NODE_ENV,
     services: {
       database: dbConnected ? 'connected' : 'disconnected',
@@ -104,6 +109,10 @@ app.use('/api/v1/ocr', ocrRoutes);
 app.use('/api/v1/search', searchRoutes);
 app.use('/api/v1/analytics', analyticsRoutes);
 app.use('/api/v1/intelligence', intelligenceRoutes);
+app.use('/api/v1/knowledge', knowledgeRoutes);
+app.use('/api/v1/graph', graphRoutes);
+app.use('/api/v1/memory', memoryRoutes);
+app.use('/api/v1/compliance', complianceRoutes);
 
 // ────────── 404 Handler ──────────
 app.use('*', (req, res) => {

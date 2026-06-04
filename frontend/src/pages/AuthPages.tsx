@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'motion/react'
-import { 
-  Shield, Mail, Lock, User, CheckCircle, ArrowRight, Building, 
-  ChevronLeft, Key, Cpu 
+import {
+  Shield, Mail, Lock, User, CheckCircle, ArrowRight, Building,
+  ChevronLeft, Key, Cpu
 } from 'lucide-react'
 import { useAppStore } from '../store/useAppStore'
 import { SecureVaultLogo } from '../components/Navbar'
@@ -38,9 +38,8 @@ const RotatingSidebar: React.FC<{ side: 'left' | 'right' }> = ({ side }) => {
   }, [])
 
   return (
-    <div className={`hidden lg:flex lg:col-span-6 relative overflow-hidden bg-[#03060f] text-white flex-col justify-between p-12 ${
-      side === 'left' ? 'border-r border-slate-800' : 'border-l border-slate-800'
-    }`}>
+    <div className={`hidden lg:flex lg:col-span-6 relative overflow-hidden bg-[#03060f] text-white flex-col justify-between p-12 ${side === 'left' ? 'border-r border-slate-800' : 'border-l border-slate-800'
+      }`}>
       {/* Background Gradients */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(26,86,219,0.18),transparent_60%)] pointer-events-none" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(6,182,212,0.1),transparent_65%)] pointer-events-none" />
@@ -75,7 +74,7 @@ const RotatingSidebar: React.FC<{ side: 'left' | 'right' }> = ({ side }) => {
                 {/* Floating particles */}
                 <div className="absolute w-2 h-2 rounded-full bg-blue-400 top-4 left-1/4 animate-bounce" />
                 <div className="absolute w-1.5 h-1.5 rounded-full bg-cyan-400 bottom-6 right-1/4 animate-ping" />
-                
+
                 {/* Central Orb */}
                 <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-blue-600 to-cyan-500 flex items-center justify-center shadow-[0_0_50px_rgba(6,182,212,0.35)] border border-white/10">
                   <Shield size={32} className="text-white animate-pulse" />
@@ -146,9 +145,8 @@ const RotatingSidebar: React.FC<{ side: 'left' | 'right' }> = ({ side }) => {
             <button
               key={i}
               onClick={() => setCurrentSlide(i)}
-              className={`h-1.5 rounded-full transition-all cursor-pointer ${
-                currentSlide === i ? 'w-6 bg-blue-500' : 'w-1.5 bg-slate-800 hover:bg-slate-700'
-              }`}
+              className={`h-1.5 rounded-full transition-all cursor-pointer ${currentSlide === i ? 'w-6 bg-blue-500' : 'w-1.5 bg-slate-800 hover:bg-slate-700'
+                }`}
             />
           ))}
         </div>
@@ -161,7 +159,7 @@ const RotatingSidebar: React.FC<{ side: 'left' | 'right' }> = ({ side }) => {
 export const LoginPage: React.FC = () => {
   const { login, googleLogin } = useAppStore()
   const navigate = useNavigate()
-  
+
   // Tab roles: Employee, EnterpriseAdmin (SuperAdmin extracted)
   const [activeTab, setActiveTab] = useState<'Employee' | 'EnterpriseAdmin'>('Employee')
   const [email, setEmail] = useState('')
@@ -338,11 +336,10 @@ export const LoginPage: React.FC = () => {
                   setOtpSent(false)
                   setError('')
                 }}
-                className={`py-2 text-[11px] font-bold rounded-lg transition-all cursor-pointer ${
-                  activeTab === role 
-                    ? 'bg-blue-600 text-white shadow-sm' 
-                    : 'text-slate-500 dark:text-gray-400 hover:text-slate-800 dark:hover:text-white'
-                }`}
+                className={`py-2 text-[11px] font-bold rounded-lg transition-all cursor-pointer ${activeTab === role
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'text-slate-500 dark:text-gray-400 hover:text-slate-800 dark:hover:text-white'
+                  }`}
               >
                 {role === 'EnterpriseAdmin' ? 'Enterprise Admin' : 'Employee'}
               </button>
@@ -421,9 +418,7 @@ export const LoginPage: React.FC = () => {
             </form>
           ) : (
             <form onSubmit={handleVerifyAndLogin} className="space-y-4 text-left">
-              <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800 text-blue-800 dark:text-slate-300 p-3 rounded-lg text-xs leading-relaxed">
-                We sent a verification OTP to <strong>{email}</strong>. Enter <strong>123456</strong> to proceed.
-              </div>
+
 
               <div>
                 <label className="block text-[10px] font-bold text-slate-550 uppercase mb-1.5">OTP Code</label>
@@ -440,8 +435,8 @@ export const LoginPage: React.FC = () => {
               >
                 {loading ? 'Verifying...' : 'Verify OTP & Authorize'}
               </button>
-              
-              <button 
+
+              <button
                 type="button" onClick={() => setOtpSent(false)}
                 className="w-full text-center text-[10px] text-slate-400 hover:underline cursor-pointer"
               >
@@ -482,7 +477,7 @@ export const LoginPage: React.FC = () => {
               <h3 className="font-display font-bold text-base text-slate-900 dark:text-white">Google Single Sign-On</h3>
               <p className="text-[11px] text-slate-500 dark:text-gray-400">Select or enter a Google account to authorize</p>
             </div>
-            
+
             <div className="space-y-2">
               <button
                 type="button"
@@ -495,7 +490,7 @@ export const LoginPage: React.FC = () => {
                 <div className="font-semibold text-slate-950 dark:text-white">Manya Parikh</div>
                 <div className="text-[10px] text-slate-500 dark:text-gray-400">manyaparikh23@gmail.com (Super Admin)</div>
               </button>
-              
+
               <button
                 type="button"
                 onClick={() => {
@@ -563,7 +558,7 @@ export const LoginPage: React.FC = () => {
 export const OrgRegisterPage: React.FC = () => {
   const { registerOrganization } = useAppStore()
   const navigate = useNavigate()
-  
+
   const [formData, setFormData] = useState({
     companyName: '',
     companyType: 'Private Limited',
@@ -581,13 +576,13 @@ export const OrgRegisterPage: React.FC = () => {
     password: '',
     confirmPassword: ''
   })
-  
+
   const [otpSent, setOtpSent] = useState(false)
   const [otpCode, setOtpCode] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match.')
@@ -599,26 +594,35 @@ export const OrgRegisterPage: React.FC = () => {
     }
     setError('')
     setLoading(true)
-    setTimeout(() => {
+    try {
+      const response = await fetch('http://localhost:5000/api/v1/auth/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: formData.adminEmail, purpose: 'register' })
+      });
+      const data = await response.json();
+      if (response.ok && data.success) {
+        setOtpSent(true)
+      } else {
+        setError(data.message || 'Failed to send verification code.')
+      }
+    } catch (err) {
+      setError('Connection to security server failed.')
+    } finally {
       setLoading(false)
-      setOtpSent(true)
-    }, 1000)
+    }
   }
 
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
-    if (otpCode !== '123456') {
-      setError('Invalid OTP code. Try entering 123456.')
-      return
-    }
     setLoading(true)
-    const success = await registerOrganization(formData)
+    const success = await registerOrganization({ ...formData, otp: otpCode })
     setLoading(false)
     if (success) {
       navigate('/login')
     } else {
-      setError('Registration failed. Try again.')
+      setError('Registration failed. Please check your verification code or entries.')
     }
   }
 
@@ -652,16 +656,16 @@ export const OrgRegisterPage: React.FC = () => {
 
           {!otpSent ? (
             <form onSubmit={handleRegister} className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
-              
+
               {/* Col 1 */}
               <div className="space-y-4">
                 <h3 className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase border-b border-slate-200 dark:border-white/5 pb-1">Corporate Profile</h3>
-                
+
                 <div>
                   <label className="block text-[10px] font-bold text-slate-500 dark:text-gray-400 uppercase mb-1">Company Name</label>
                   <input
                     type="text" required placeholder="Acme Corporation"
-                    value={formData.companyName} onChange={e => setFormData({...formData, companyName: e.target.value})}
+                    value={formData.companyName} onChange={e => setFormData({ ...formData, companyName: e.target.value })}
                     className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2 text-xs text-slate-850 dark:text-white focus:outline-none focus:border-blue-600"
                   />
                 </div>
@@ -670,7 +674,7 @@ export const OrgRegisterPage: React.FC = () => {
                   <label className="block text-[10px] font-bold text-slate-500 dark:text-gray-400 uppercase mb-1">GST / Tax Number</label>
                   <input
                     type="text" required placeholder="29GGGGG1314R9Z8"
-                    value={formData.gstNumber} onChange={e => setFormData({...formData, gstNumber: e.target.value})}
+                    value={formData.gstNumber} onChange={e => setFormData({ ...formData, gstNumber: e.target.value })}
                     className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2 text-xs text-slate-850 dark:text-white focus:outline-none focus:border-blue-600"
                   />
                 </div>
@@ -680,7 +684,7 @@ export const OrgRegisterPage: React.FC = () => {
                     <label className="block text-[10px] font-bold text-slate-500 dark:text-gray-400 uppercase mb-1">Email</label>
                     <input
                       type="email" required placeholder="info@acme.com"
-                      value={formData.companyEmail} onChange={e => setFormData({...formData, companyEmail: e.target.value})}
+                      value={formData.companyEmail} onChange={e => setFormData({ ...formData, companyEmail: e.target.value })}
                       className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2 text-xs text-slate-850 dark:text-white focus:outline-none focus:border-blue-600"
                     />
                   </div>
@@ -688,7 +692,7 @@ export const OrgRegisterPage: React.FC = () => {
                     <label className="block text-[10px] font-bold text-slate-500 dark:text-gray-400 uppercase mb-1">Contact Phone</label>
                     <input
                       type="text" required placeholder="+91 999..."
-                      value={formData.contactNumber} onChange={e => setFormData({...formData, contactNumber: e.target.value})}
+                      value={formData.contactNumber} onChange={e => setFormData({ ...formData, contactNumber: e.target.value })}
                       className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2 text-xs text-slate-850 dark:text-white focus:outline-none focus:border-blue-600"
                     />
                   </div>
@@ -698,7 +702,7 @@ export const OrgRegisterPage: React.FC = () => {
                   <label className="block text-[10px] font-bold text-slate-500 dark:text-gray-400 uppercase mb-1">Street Address</label>
                   <input
                     type="text" required placeholder="4th Floor, Phase 1"
-                    value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})}
+                    value={formData.address} onChange={e => setFormData({ ...formData, address: e.target.value })}
                     className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2 text-xs text-slate-850 dark:text-white focus:outline-none focus:border-blue-600"
                   />
                 </div>
@@ -708,7 +712,7 @@ export const OrgRegisterPage: React.FC = () => {
                     <label className="block text-[10px] font-bold text-slate-500 dark:text-gray-400 uppercase mb-1">City</label>
                     <input
                       type="text" required placeholder="Bangalore"
-                      value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})}
+                      value={formData.city} onChange={e => setFormData({ ...formData, city: e.target.value })}
                       className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2 text-xs text-slate-850 dark:text-white focus:outline-none focus:border-blue-600"
                     />
                   </div>
@@ -716,7 +720,7 @@ export const OrgRegisterPage: React.FC = () => {
                     <label className="block text-[10px] font-bold text-slate-500 dark:text-gray-400 uppercase mb-1">State</label>
                     <input
                       type="text" required placeholder="Karnataka"
-                      value={formData.state} onChange={e => setFormData({...formData, state: e.target.value})}
+                      value={formData.state} onChange={e => setFormData({ ...formData, state: e.target.value })}
                       className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2 text-xs text-slate-850 dark:text-white focus:outline-none focus:border-blue-600"
                     />
                   </div>
@@ -724,7 +728,7 @@ export const OrgRegisterPage: React.FC = () => {
                     <label className="block text-[10px] font-bold text-slate-500 dark:text-gray-400 uppercase mb-1">Country</label>
                     <input
                       type="text" required placeholder="India"
-                      value={formData.country} onChange={e => setFormData({...formData, country: e.target.value})}
+                      value={formData.country} onChange={e => setFormData({ ...formData, country: e.target.value })}
                       className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2 text-xs text-slate-850 dark:text-white focus:outline-none"
                     />
                   </div>
@@ -734,12 +738,12 @@ export const OrgRegisterPage: React.FC = () => {
               {/* Col 2 */}
               <div className="space-y-4">
                 <h3 className="text-xs font-bold text-cyan-600 dark:text-cyan-400 uppercase border-b border-slate-200 dark:border-white/5 pb-1">Admin Configuration</h3>
-                
+
                 <div>
                   <label className="block text-[10px] font-bold text-slate-500 dark:text-gray-400 uppercase mb-1">Admin Full Name</label>
                   <input
                     type="text" required placeholder="John Doe"
-                    value={formData.adminName} onChange={e => setFormData({...formData, adminName: e.target.value})}
+                    value={formData.adminName} onChange={e => setFormData({ ...formData, adminName: e.target.value })}
                     className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2 text-xs text-slate-850 dark:text-white focus:outline-none focus:border-blue-600"
                   />
                 </div>
@@ -748,7 +752,7 @@ export const OrgRegisterPage: React.FC = () => {
                   <label className="block text-[10px] font-bold text-slate-500 dark:text-gray-400 uppercase mb-1">Admin Work Email</label>
                   <input
                     type="email" required placeholder="admin@acme.com"
-                    value={formData.adminEmail} onChange={e => setFormData({...formData, adminEmail: e.target.value})}
+                    value={formData.adminEmail} onChange={e => setFormData({ ...formData, adminEmail: e.target.value })}
                     className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2 text-xs text-slate-850 dark:text-white focus:outline-none focus:border-blue-600"
                   />
                 </div>
@@ -757,7 +761,7 @@ export const OrgRegisterPage: React.FC = () => {
                   <label className="block text-[10px] font-bold text-slate-500 dark:text-gray-400 uppercase mb-1">Secure Password</label>
                   <input
                     type="password" required placeholder="Minimum 8 characters"
-                    value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})}
+                    value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })}
                     className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2 text-xs text-slate-850 dark:text-white focus:outline-none focus:border-blue-600"
                   />
                 </div>
@@ -766,7 +770,7 @@ export const OrgRegisterPage: React.FC = () => {
                   <label className="block text-[10px] font-bold text-slate-500 dark:text-gray-400 uppercase mb-1">Confirm Password</label>
                   <input
                     type="password" required placeholder="Re-enter password"
-                    value={formData.confirmPassword} onChange={e => setFormData({...formData, confirmPassword: e.target.value})}
+                    value={formData.confirmPassword} onChange={e => setFormData({ ...formData, confirmPassword: e.target.value })}
                     className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2 text-xs text-slate-850 dark:text-white focus:outline-none focus:border-blue-600"
                   />
                 </div>
@@ -822,7 +826,7 @@ export const OrgRegisterPage: React.FC = () => {
 // ─── EMPLOYEE REGISTER PAGE ──────────────────────────────
 export const EmployeeRegisterPage: React.FC = () => {
   const { registerEmployee } = useAppStore()
-  
+
   const [formData, setFormData] = useState({
     employeeId: '',
     firstName: '',
@@ -846,7 +850,7 @@ export const EmployeeRegisterPage: React.FC = () => {
     }
     setError('')
     setLoading(true)
-    
+
     try {
       const success = await registerEmployee(formData)
       if (success) {
@@ -907,7 +911,7 @@ export const EmployeeRegisterPage: React.FC = () => {
                   <label className="block text-[10px] font-bold text-slate-500 dark:text-gray-400 uppercase mb-1">First Name</label>
                   <input
                     type="text" required placeholder="Neha"
-                    value={formData.firstName} onChange={e => setFormData({...formData, firstName: e.target.value})}
+                    value={formData.firstName} onChange={e => setFormData({ ...formData, firstName: e.target.value })}
                     className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-xs text-slate-850 dark:text-white focus:outline-none focus:border-blue-600"
                   />
                 </div>
@@ -915,7 +919,7 @@ export const EmployeeRegisterPage: React.FC = () => {
                   <label className="block text-[10px] font-bold text-slate-500 dark:text-gray-400 uppercase mb-1">Last Name</label>
                   <input
                     type="text" required placeholder="Gupta"
-                    value={formData.lastName} onChange={e => setFormData({...formData, lastName: e.target.value})}
+                    value={formData.lastName} onChange={e => setFormData({ ...formData, lastName: e.target.value })}
                     className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-xs text-slate-850 dark:text-white focus:outline-none focus:border-blue-600"
                   />
                 </div>
@@ -926,7 +930,7 @@ export const EmployeeRegisterPage: React.FC = () => {
                   <label className="block text-[10px] font-bold text-slate-500 dark:text-gray-400 uppercase mb-1">Employee ID</label>
                   <input
                     type="text" required placeholder="EMP-004"
-                    value={formData.employeeId} onChange={e => setFormData({...formData, employeeId: e.target.value})}
+                    value={formData.employeeId} onChange={e => setFormData({ ...formData, employeeId: e.target.value })}
                     className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-xs text-slate-850 dark:text-white focus:outline-none focus:border-blue-600"
                   />
                 </div>
@@ -934,7 +938,7 @@ export const EmployeeRegisterPage: React.FC = () => {
                   <label className="block text-[10px] font-bold text-slate-500 dark:text-gray-400 uppercase mb-1">Mobile Number</label>
                   <input
                     type="text" required placeholder="+91 999..."
-                    value={formData.mobileNumber} onChange={e => setFormData({...formData, mobileNumber: e.target.value})}
+                    value={formData.mobileNumber} onChange={e => setFormData({ ...formData, mobileNumber: e.target.value })}
                     className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-xs text-slate-850 dark:text-white focus:outline-none focus:border-blue-600"
                   />
                 </div>
@@ -944,7 +948,7 @@ export const EmployeeRegisterPage: React.FC = () => {
                 <label className="block text-[10px] font-bold text-slate-500 dark:text-gray-400 uppercase mb-1">Work Email</label>
                 <input
                   type="email" required placeholder="neha@company.com"
-                  value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})}
+                  value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })}
                   className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-xs text-slate-850 dark:text-white focus:outline-none focus:border-blue-600"
                 />
               </div>
@@ -953,7 +957,7 @@ export const EmployeeRegisterPage: React.FC = () => {
                 <div>
                   <label className="block text-[10px] font-bold text-slate-500 dark:text-gray-400 uppercase mb-1">Department</label>
                   <select
-                    value={formData.department} onChange={e => setFormData({...formData, department: e.target.value})}
+                    value={formData.department} onChange={e => setFormData({ ...formData, department: e.target.value })}
                     className="w-full bg-slate-50 dark:bg-[#0d1424] border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-xs text-slate-850 dark:text-white focus:outline-none"
                   >
                     <option value="Legal">Legal</option>
@@ -967,7 +971,7 @@ export const EmployeeRegisterPage: React.FC = () => {
                   <label className="block text-[10px] font-bold text-slate-500 dark:text-gray-400 uppercase mb-1">Designation</label>
                   <input
                     type="text" required placeholder="Talent Lead"
-                    value={formData.designation} onChange={e => setFormData({...formData, designation: e.target.value})}
+                    value={formData.designation} onChange={e => setFormData({ ...formData, designation: e.target.value })}
                     className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-xs text-slate-850 dark:text-white focus:outline-none focus:border-blue-600"
                   />
                 </div>
@@ -978,7 +982,7 @@ export const EmployeeRegisterPage: React.FC = () => {
                   <label className="block text-[10px] font-bold text-slate-500 dark:text-gray-400 uppercase mb-1">Password</label>
                   <input
                     type="password" required placeholder="••••••••"
-                    value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})}
+                    value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })}
                     className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-xs text-slate-850 dark:text-white focus:outline-none focus:border-blue-600"
                   />
                 </div>
@@ -986,7 +990,7 @@ export const EmployeeRegisterPage: React.FC = () => {
                   <label className="block text-[10px] font-bold text-slate-500 dark:text-gray-400 uppercase mb-1">Confirm Password</label>
                   <input
                     type="password" required placeholder="••••••••"
-                    value={formData.confirmPassword} onChange={e => setFormData({...formData, confirmPassword: e.target.value})}
+                    value={formData.confirmPassword} onChange={e => setFormData({ ...formData, confirmPassword: e.target.value })}
                     className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-xs text-slate-850 dark:text-white focus:outline-none focus:border-blue-600"
                   />
                 </div>
@@ -1026,7 +1030,7 @@ export const ForgotPasswordPage: React.FC = () => {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const handleRequestOtp = (e: React.FormEvent) => {
+  const handleRequestOtp = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!email) {
       setError('Please provide an email.')
@@ -1034,19 +1038,28 @@ export const ForgotPasswordPage: React.FC = () => {
     }
     setError('')
     setLoading(true)
-    setTimeout(() => {
+    try {
+      const response = await fetch('http://localhost:5000/api/v1/auth/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, purpose: 'reset_password' })
+      });
+      const data = await response.json();
+      if (response.ok && data.success) {
+        setOtpSent(true)
+      } else {
+        setError(data.message || 'Failed to send verification code.')
+      }
+    } catch (err) {
+      setError('Connection to security server failed.')
+    } finally {
       setLoading(false)
-      setOtpSent(true)
-    }, 800)
+    }
   }
 
-  const handleResetPassword = (e: React.FormEvent) => {
+  const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
-    if (otpCode !== '123456') {
-      setError('Invalid OTP code. Try entering 123456.')
-      return
-    }
     if (password !== confirmPassword) {
       setError('Passwords do not match.')
       return
@@ -1057,10 +1070,23 @@ export const ForgotPasswordPage: React.FC = () => {
     }
     
     setLoading(true)
-    setTimeout(() => {
+    try {
+      const response = await fetch('http://localhost:5000/api/v1/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, otp: otpCode, newPassword: password })
+      });
+      const data = await response.json();
+      if (response.ok && data.success) {
+        setCompleted(true)
+      } else {
+        setError(data.message || 'Password reset failed.')
+      }
+    } catch (err) {
+      setError('Connection to security server failed.')
+    } finally {
       setLoading(false)
-      setCompleted(true)
-    }, 1000)
+    }
   }
 
   return (
@@ -1180,7 +1206,7 @@ export const SuperAdminLoginPage: React.FC = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const handleSendOtp = (e: React.FormEvent) => {
+  const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!email || !password) {
       setError('Please fill in credentials.')
@@ -1188,25 +1214,32 @@ export const SuperAdminLoginPage: React.FC = () => {
     }
     setError('')
     setLoading(true)
-    setTimeout(() => {
+    try {
+      const response = await fetch('http://localhost:5000/api/v1/auth/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, purpose: 'login' })
+      });
+      const data = await response.json();
+      if (response.ok && data.success) {
+        setOtpSent(true)
+      } else {
+        setError(data.message || 'Failed to send verification code.')
+      }
+    } catch (err) {
+      setError('Connection to security server failed.')
+    } finally {
       setLoading(false)
-      setOtpSent(true)
-    }, 800)
+    }
   }
 
   const handleVerifyAndLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     setLoading(true)
-    
-    if (otpSent && otpCode !== '123456') {
-      setError('Invalid OTP code. Try entering 123456.')
-      setLoading(false)
-      return
-    }
 
     try {
-      const success = await login('SuperAdmin', email, undefined, undefined)
+      const success = await login('SuperAdmin', email, undefined, undefined, password, otpCode)
       if (success) {
         navigate('/dashboard')
       } else {
@@ -1224,7 +1257,7 @@ export const SuperAdminLoginPage: React.FC = () => {
       {/* Background cybernetics grid decoration */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(26,86,219,0.2),transparent_70%)] pointer-events-none" />
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-[100px] pointer-events-none" />
-      
+
       <div className="w-full max-w-md bg-slate-900/80 border border-slate-800 p-8 rounded-3xl shadow-2xl relative z-10 space-y-6">
         <div className="text-center space-y-2.5">
           <div className="inline-flex rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-600 p-3.5 border border-purple-500/30 text-white mx-auto shadow-[0_0_25px_rgba(124,58,237,0.3)] animate-pulse">
@@ -1296,7 +1329,7 @@ export const SuperAdminLoginPage: React.FC = () => {
             </button>
           </form>
         )}
-        
+
         <div className="text-center pt-2 text-[10px] text-slate-500 font-mono">
           <Link to="/login" className="hover:text-purple-400 transition-colors">Standard Gateway</Link>
         </div>

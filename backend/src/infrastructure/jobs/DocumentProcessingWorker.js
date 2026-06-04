@@ -1,4 +1,4 @@
-// DocumentProcessingWorker — Phase 2
+// DocumentProcessingWorker — Phase 3: Enterprise Knowledge Brain
 // Background worker that processes the AI job queue stage by stage
 import { logger } from '../logging/logger.js';
 import { dequeueJob, updateJobStatus } from './AIQueueService.js';
@@ -13,7 +13,7 @@ import aiRepository from '../repositories/AIRepository.js';
 import documentRepository from '../repositories/DocumentRepository.js';
 import { query } from '../database/connection.js';
 
-// Refinements imports
+// Phase 2 refinements imports
 import { publishSystemEvent } from '../events/EventService.js';
 import { prepareDocumentGraphLinks } from '../ai/GraphPreparationService.js';
 import { logJobFailure } from '../../application/services/JobRecoveryService.js';
@@ -21,6 +21,11 @@ import { normalizeVendorName } from '../../application/services/VendorNormalizat
 import { logTimelineEvent } from '../../application/services/KnowledgeTimelineService.js';
 import { registerKnowledgeAsset } from '../../application/services/KnowledgeAssetService.js';
 import { validateOCRText } from '../../application/services/SecurityHardeningService.js';
+
+// Phase 3: Knowledge Brain imports
+import organizationalMemoryService from '../../application/services/OrganizationalMemoryService.js';
+import expertDiscoveryService from '../../application/services/ExpertDiscoveryService.js';
+import knowledgeGraphService from '../../application/services/KnowledgeGraphService.js';
 
 const processJob = async (job) => {
   const { id: jobId, documentId, organizationId, userId } = job;
@@ -301,6 +306,38 @@ const processJob = async (job) => {
       details: `Successfully completed all processing pipelines including OCR text, sensitivity, and vector indexing. Mapped department: ${doc.department || 'General'}.`,
       triggeredBy: userId
     });
+
+    // ── Phase 3: Record knowledge contribution & update expertise ──
+    if (userId) {
+      try {
+        await organizationalMemoryService.recordContribution(organizationId, userId, {
+          type: 'document_upload',
+          documentId,
+          domain: classResult?.data?.primary_category || doc.category || 'General',
+          description: `Uploaded and processed: ${doc.name}`,
+          qualityScore: 1.0
+        });
+        logger.info(`  📊 [Phase3] Knowledge contribution recorded for user ${userId}`);
+      } catch (p3err) {
+        logger.warn(`  Phase 3 contribution hook failed: ${p3err.message}`);
+      }
+    }
+
+    // ── Phase 3: Update Knowledge Graph node for this document ──
+    try {
+      await knowledgeGraphService._upsertNode(organizationId, 'Document', documentId, doc.name, {
+        category: doc.category, department: doc.department, processed: true
+      });
+      if (userId) {
+        const docNode = await knowledgeGraphService._findNode(organizationId, 'Document', documentId);
+        const userNode = await knowledgeGraphService._findNode(organizationId, 'Employee', userId);
+        if (docNode && userNode) {
+          await knowledgeGraphService._upsertEdge(organizationId, docNode.id, userNode.id, 'CREATED_BY', 1.0);
+        }
+      }
+    } catch (graphErr) {
+      logger.warn(`  Phase 3 graph hook failed: ${graphErr.message}`);
+    }
 
     updateJobStatus(jobId, { status: 'completed', currentStage: 'done', completedAt: new Date().toISOString() });
     logger.info(`✅ Job ${jobId} completed successfully for doc ${documentId}`);

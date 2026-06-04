@@ -200,6 +200,41 @@ export class AuthService {
       return { success: false, message: `This account does not have the ${role} role.` };
     }
 
+    // Verify Organization ID for Enterprise Admin
+    if (role === 'EnterpriseAdmin' && organizationId) {
+      let orgResult = null;
+      if (isLocalJSONDb) {
+        const orgs = await readTable('organizations');
+        orgResult = orgs.find(o => o.id === organizationId || o.slug === organizationId.toLowerCase().trim());
+      } else {
+        // Try to match UUID first (using a safe regex or try/catch)
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(organizationId);
+        let queryStr = 'SELECT * FROM organizations WHERE slug = $1';
+        let queryParams = [organizationId.toLowerCase().trim()];
+        if (isUuid) {
+          queryStr = 'SELECT * FROM organizations WHERE id = $1 OR slug = $2';
+          queryParams = [organizationId, organizationId.toLowerCase().trim()];
+        }
+        const dbRes = await query(queryStr, queryParams);
+        orgResult = dbRes.rows[0];
+      }
+
+      if (!orgResult) {
+        return { success: false, message: 'Invalid Organization ID.' };
+      }
+
+      if (rawUser.organization_id !== orgResult.id) {
+        return { success: false, message: 'Your account does not belong to this organization.' };
+      }
+    }
+
+    // Verify Employee ID for Employee/Manager roles
+    if ((role === 'Employee' || role === 'DepartmentManager') && employeeId) {
+      if (!rawUser.employee_id || rawUser.employee_id.toLowerCase().trim() !== employeeId.toLowerCase().trim()) {
+        return { success: false, message: 'Invalid Employee ID.' };
+      }
+    }
+
     // Update last login
     await userRepository.update(rawUser.id, { lastLoginAt: new Date().toISOString() });
 

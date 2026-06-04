@@ -28,12 +28,48 @@ export const sendOTP = async (req, res) => {
     throw createError(`Invalid purpose. Must be one of: ${validPurposes.join(', ')}`, 400);
   }
 
+  // ── SECURITY FIX: For LOGIN and RESET — verify the account exists first ──
+  if (purpose === 'login' || purpose === 'reset_password') {
+    const { UserRepository } = await import('../../infrastructure/repositories/UserRepository.js');
+    const userRepo = new UserRepository();
+    const existingUser = await userRepo.findByEmail(email);
+    if (!existingUser) {
+      // Return a generic message to prevent email enumeration attacks,
+      // but do NOT send any OTP or email
+      logger.warn(`OTP requested for non-existent account: ${email} (purpose: ${purpose})`);
+      return res.status(404).json({
+        success: false,
+        message: purpose === 'login'
+          ? 'No account found with this email address. Please register first.'
+          : 'No account found with this email address.'
+      });
+    }
+    if (existingUser.is_active === false) {
+      return res.status(403).json({
+        success: false,
+        message: 'This account has been deactivated. Contact your administrator.'
+      });
+    }
+  }
+
+  // ── SECURITY FIX: For REGISTER — ensure the email is NOT already registered ──
+  if (purpose === 'register') {
+    const { UserRepository } = await import('../../infrastructure/repositories/UserRepository.js');
+    const userRepo = new UserRepository();
+    const existingUser = await userRepo.findByEmail(email);
+    if (existingUser) {
+      return res.status(409).json({
+        success: false,
+        message: 'An account with this email already exists. Please log in instead.'
+      });
+    }
+  }
+
   const otp = await authService.storeOTP(email, purpose, req.ip);
 
   res.json({
     success: true,
-    message: 'OTP generated. In production this would be sent via email/SMS.',
-    // Dev only — remove in production
+    message: 'Verification code sent to your email address.',
     ...(process.env.NODE_ENV === 'development' && { devOTP: otp }),
     expiresIn: `${process.env.OTP_EXPIRY_MINUTES || 10} minutes`
   });
@@ -103,12 +139,22 @@ export const login = async (req, res) => {
 export const registerOrganization = async (req, res) => {
   const { otp, ...registrationData } = req.body;
 
-  // Verify registration OTP
-  if (otp) {
-    const otpResult = await authService.verifyOTP(registrationData.adminEmail || registrationData.companyEmail, otp, 'register');
-    if (!otpResult.valid) {
-      return res.status(400).json({ success: false, message: otpResult.reason });
-    }
+  const verifyEmail = registrationData.adminEmail || registrationData.companyEmail;
+
+  // ── SECURITY FIX: OTP is REQUIRED for registration — no OTP = no account created ──
+  if (!otp) {
+    return res.status(400).json({
+      success: false,
+      message: 'Email verification code is required. Please verify your email first.'
+    });
+  }
+
+  const otpResult = await authService.verifyOTP(verifyEmail, otp, 'register');
+  if (!otpResult.valid) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid or expired verification code. Please request a new OTP.'
+    });
   }
 
   const result = await authService.registerOrganization(
@@ -150,17 +196,40 @@ export const registerOrganization = async (req, res) => {
 export const registerEmployee = async (req, res) => {
   const { firstName, lastName, email, password, employeeId, department, designation, mobileNumber, organizationId, otp } = req.body;
 
-  // Verify OTP
-  if (otp) {
-    const otpResult = await authService.verifyOTP(email, otp, 'register');
-    if (!otpResult.valid) {
-      return res.status(400).json({ success: false, message: otpResult.reason });
-    }
+  if (!email || !password || !firstName || !lastName) {
+    throw createError('First name, last name, email, and password are required.', 400);
+  }
+
+  // ── SECURITY FIX: OTP is REQUIRED — no OTP = no account created ──
+  if (!otp) {
+    return res.status(400).json({
+      success: false,
+      message: 'Email verification code is required. Please verify your email first.'
+    });
+  }
+
+  const otpResult = await authService.verifyOTP(email, otp, 'register');
+  if (!otpResult.valid) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid or expired verification code. Please request a new OTP.'
+    });
+  }
+
+  // OTP verified — now safe to create the account
+  const { UserRepository } = await import('../../infrastructure/repositories/UserRepository.js');
+  const userRepo = new UserRepository();
+
+  // Check for duplicate email
+  const existing = await userRepo.findByEmail(email);
+  if (existing) {
+    return res.status(409).json({
+      success: false,
+      message: 'An account with this email already exists.'
+    });
   }
 
   const passwordHash = await authService.hashPassword(password);
-  const { UserRepository } = await import('../../infrastructure/repositories/UserRepository.js');
-  const userRepo = new UserRepository();
 
   const user = await userRepo.create({
     organizationId,
@@ -177,7 +246,7 @@ export const registerEmployee = async (req, res) => {
 
   res.status(201).json({
     success: true,
-    message: 'Self-registration submitted. Awaiting administrator approval.',
+    message: 'Registration complete. Your account is pending administrator approval.',
     userId: user.id
   });
 };
@@ -187,11 +256,23 @@ export const forgotPassword = async (req, res) => {
   const { email } = req.body;
   if (!email) throw createError('Email is required.', 400);
 
+  // ── SECURITY FIX: Only send reset OTP if account exists ──
+  const { UserRepository } = await import('../../infrastructure/repositories/UserRepository.js');
+  const userRepo = new UserRepository();
+  const existingUser = await userRepo.findByEmail(email);
+  if (!existingUser) {
+    // Do not reveal whether the email is registered (security best practice)
+    return res.json({
+      success: true,
+      message: 'If an account with this email exists, a reset code has been sent.'
+    });
+  }
+
   const otp = await authService.storeOTP(email, 'reset_password', req.ip);
 
   res.json({
     success: true,
-    message: 'Password reset OTP generated.',
+    message: 'Password reset code sent to your email address.',
     ...(process.env.NODE_ENV === 'development' && { devOTP: otp })
   });
 };

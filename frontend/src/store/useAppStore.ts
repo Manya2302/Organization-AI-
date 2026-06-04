@@ -257,8 +257,42 @@ export const useAppStore = create<AppState>((set, get) => ({
             get().addNotification(`Login failed: Enterprise Admin accounts must log in through the Admin Portal.`, 'error');
             return false;
           }
+
+          // STRICT ORG ID VALIDATION FOR ADMIN
+          if (role === 'EnterpriseAdmin' && orgId) {
+            const orgClean = orgId.toLowerCase().trim();
+            if (orgClean !== 'org-1001' && orgClean !== 'acme-tech-solutions' && orgClean !== 'acme-tech-solutions-pvt-ltd') {
+              get().addNotification('Invalid Organization ID or slug.', 'error');
+              return false;
+            }
+          }
+
+          // STRICT EMPLOYEE ID VALIDATION
+          if (role === 'Employee' && empId) {
+            const empClean = empId.toLowerCase().trim();
+            if ((matched.employeeId || '').toLowerCase().trim() !== empClean) {
+              get().addNotification('Invalid Employee ID.', 'error');
+              return false;
+            }
+          }
+
           loggedInUser = matched;
         } else {
+          // If not matching seeded mock list, require correct orgId or empId format
+          if (role === 'EnterpriseAdmin') {
+            const orgClean = (orgId || '').toLowerCase().trim();
+            if (orgClean !== 'org-1001' && orgClean !== 'acme-tech-solutions') {
+              get().addNotification('Invalid Organization ID or slug.', 'error');
+              return false;
+            }
+          } else {
+            const empClean = (empId || '').toLowerCase().trim();
+            if (!empClean.startsWith('emp')) {
+              get().addNotification('Invalid Employee ID format (must start with EMP).', 'error');
+              return false;
+            }
+          }
+
           loggedInUser = {
             id: String(Date.now()),
             employeeId: empId || 'EMP' + Math.floor(Math.random() * 1000),

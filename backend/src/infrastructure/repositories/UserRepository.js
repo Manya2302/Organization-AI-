@@ -7,7 +7,7 @@ import { User } from '../../core/entities/User.js';
 import { logger } from '../logging/logger.js';
 
 export class UserRepository {
-  // Find by email (for login)
+  // Find by email (for login) — uses idx_users_email_lower index
   async findByEmail(email) {
     if (isLocalJSONDb) {
       const users = await readTable('users');
@@ -15,7 +15,7 @@ export class UserRepository {
       return u ? u : null;
     }
     const result = await query(
-      'SELECT * FROM users WHERE email = $1 AND is_active = TRUE LIMIT 1',
+      'SELECT * FROM users WHERE LOWER(email) = $1 AND is_active = TRUE LIMIT 1',
       [email.toLowerCase()]
     );
     return result.rows[0] ? result.rows[0] : null;

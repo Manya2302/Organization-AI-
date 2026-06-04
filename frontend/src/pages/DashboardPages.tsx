@@ -5,11 +5,20 @@ import {
   FileText, Users, HardDrive, ShieldAlert, UploadCloud, Search, Trash2, RotateCcw, 
   Trash, UserPlus, CheckCircle, Activity, Key, Brain, Send, 
   ChevronRight, RefreshCcw, FolderOpen, Eye, Info, Network, TrendingUp,
-  Sun, Moon, LogOut
+  Sun, Moon, LogOut, History, BarChart3
 } from 'lucide-react'
 import { useAppStore } from '../store/useAppStore'
 import type { Document } from '../store/useAppStore'
 import { DocumentIntelligencePage, SimilarDocumentsPage, AIInsightsPage, AIQueuePage } from './AIPages'
+import {
+  KnowledgeCenterPage,
+  ExpertDiscoveryPage,
+  OrganizationalMemoryPage,
+  KnowledgeGraphExplorerPage,
+  KnowledgeRiskCenterPage,
+  DepartmentIntelligencePage
+} from './KnowledgePages'
+
 
 // --- DASHBOARD CONTAINER & NAVIGATION ---
 export const DashboardLayout: React.FC = () => {
@@ -71,7 +80,31 @@ export const DashboardLayout: React.FC = () => {
               <Activity className="h-4 w-4 text-orange-400" /> AI Queue Status
             </Link>
           )}
+
+          <div className="border-t border-slate-200 dark:border-white/5 my-2" />
+          <span className="text-[9px] font-bold text-brand-secondary tracking-widest block uppercase px-3 mb-1">ENTERPRISE BRAIN</span>
+          <Link to="/dashboard/knowledge-center" className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white transition-all">
+            <Brain className="h-4 w-4 text-brand-secondary" /> Knowledge Center
+          </Link>
+          <Link to="/dashboard/experts" className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white transition-all">
+            <Users className="h-4 w-4 text-emerald-400" /> Expert Discovery
+          </Link>
+          <Link to="/dashboard/memory" className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white transition-all">
+            <History className="h-4 w-4 text-brand-accent" /> Org Memory
+          </Link>
+          <Link to="/dashboard/graph" className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white transition-all">
+            <Network className="h-4 w-4 text-brand-secondary" /> Graph Explorer
+          </Link>
+          <Link to="/dashboard/departments/intelligence" className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white transition-all">
+            <BarChart3 className="h-4 w-4 text-indigo-400" /> Dept Intelligence
+          </Link>
+          {user.role !== 'Employee' && (
+            <Link to="/dashboard/knowledge-risk" className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white transition-all">
+              <ShieldAlert className="h-4 w-4 text-rose-500" /> Risk Center
+            </Link>
+          )}
         </nav>
+
 
         {/* AI Prompt Box Widget */}
         <div className="mt-auto p-4 rounded-2xl bg-gradient-to-br from-brand-primary/10 to-brand-accent/5 border border-brand-primary/20 space-y-2">
@@ -137,6 +170,15 @@ export const DashboardLayout: React.FC = () => {
           <Route path="/similar" element={<SimilarDocumentsPage />} />
           {user.role !== 'Employee' && <Route path="/insights" element={<AIInsightsPage />} />}
           {user.role !== 'Employee' && <Route path="/queue" element={<AIQueuePage />} />}
+          
+          {/* Phase 3 Knowledge Brain Routes */}
+          <Route path="/knowledge-center" element={<KnowledgeCenterPage />} />
+          <Route path="/experts" element={<ExpertDiscoveryPage />} />
+          <Route path="/memory" element={<OrganizationalMemoryPage />} />
+          <Route path="/graph" element={<KnowledgeGraphExplorerPage />} />
+          <Route path="/departments/intelligence" element={<DepartmentIntelligencePage />} />
+          {user.role !== 'Employee' && <Route path="/knowledge-risk" element={<KnowledgeRiskCenterPage />} />}
+          
           <Route path="*" element={<Navigate to="/dashboard/documents" replace />} />
         </Routes>
       </main>

@@ -56,7 +56,7 @@ const performanceIndexes = [
 
   // document_summaries: org index
   `CREATE INDEX IF NOT EXISTS idx_doc_summaries_org_created
-     ON document_summaries(organization_id, created_at DESC)`,
+     ON document_summaries(organization_id, generated_at DESC)`,
 
   // document_classifications: org + risk_level — used in analytics
   `CREATE INDEX IF NOT EXISTS idx_doc_class_org_risk
@@ -90,13 +90,13 @@ const performanceIndexes = [
   `CREATE INDEX IF NOT EXISTS idx_search_quality_org
      ON search_quality_metrics(organization_id, created_at DESC)`,
 
-  // validation_logs: org + created_at
+  // validation_logs: org + approved_at
   `CREATE INDEX IF NOT EXISTS idx_validation_logs_org
-     ON validation_logs(organization_id, created_at DESC)`,
+     ON validation_logs(organization_id, approved_at DESC)`,
 
-  // knowledge_timeline_events: org + occurred_at
+  // knowledge_timeline: org + created_at
   `CREATE INDEX IF NOT EXISTS idx_knowledge_timeline_org
-     ON knowledge_timeline_events(organization_id, occurred_at DESC)`,
+     ON knowledge_timeline(organization_id, created_at DESC)`,
 
   // graph_readiness_metrics: org
   `CREATE INDEX IF NOT EXISTS idx_graph_readiness_org

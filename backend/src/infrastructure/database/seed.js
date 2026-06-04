@@ -59,11 +59,12 @@ const seed = async () => {
         uId = res.rows[0].id;
       }
     } catch (err) {
-      // If user already exists, update password hash to be sure it matches
-      await query('UPDATE users SET password_hash = $1 WHERE email = $2', [u.hash, u.email]);
-      const res = await query('SELECT id FROM users WHERE email = $1', [u.email]);
+      // If user already exists by employee_id or email, update their details to keep seed sync
+      const res = await query('SELECT id FROM users WHERE email = $1 OR (organization_id = $2 AND employee_id = $3)', [u.email, orgId, u.employeeId]);
       if (res.rows && res.rows.length > 0) {
         uId = res.rows[0].id;
+        await query('UPDATE users SET password_hash = $1, email = $2, name = $3, role = $4, department = $5, designation = $6 WHERE id = $7', 
+          [u.hash, u.email, u.name, u.role, u.department, u.designation, uId]);
       }
     }
     userIds[u.email] = uId;
