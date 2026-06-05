@@ -16,6 +16,9 @@ import complianceGapService from '../../application/services/ComplianceGapServic
 import policyComplianceService from '../../application/services/PolicyComplianceService.js';
 import controlEffectivenessService from '../../application/services/ControlEffectivenessService.js';
 import complianceReportingService from '../../application/services/ComplianceReportingService.js';
+import complianceWorkflowService from '../../application/services/ComplianceWorkflowService.js';
+import complianceMonitoringService from '../../application/services/ComplianceMonitoringService.js';
+import complianceAnalyticsService from '../../application/services/ComplianceAnalyticsService.js';
 
 const router = Router();
 router.use(authenticate);
@@ -303,6 +306,48 @@ router.post('/ask', async (req, res) => {
   if (!question) return res.status(400).json({ success: false, message: 'Question is required' });
   const result = await complianceIntelligenceService.answerComplianceQuestion(req.organizationId, question);
   res.json({ success: true, ...result });
+});
+
+// ─── WORKFLOWS ───────────────────────────────────────────────
+router.post('/workflows', async (req, res) => {
+  const result = await complianceWorkflowService.createWorkflow(req.organizationId, req.body);
+  res.json({ success: true, workflow: result });
+});
+
+router.post('/workflows/:id/step', async (req, res) => {
+  const result = await complianceWorkflowService.addWorkflowStep(req.organizationId, req.params.id, req.body);
+  res.json({ success: true, step: result });
+});
+
+router.post('/workflows/:id/approve', async (req, res) => {
+  const result = await complianceWorkflowService.submitApproval(
+    req.organizationId, req.params.id, { ...req.body, userId: req.user.id }
+  );
+  res.json({ success: true, approval: result });
+});
+
+router.post('/workflows/:id/comment', async (req, res) => {
+  const result = await complianceWorkflowService.addComment(
+    req.organizationId, req.params.id, { ...req.body, userId: req.user.id }
+  );
+  res.json({ success: true, comment: result });
+});
+
+router.get('/workflows/:id', async (req, res) => {
+  const result = await complianceWorkflowService.getWorkflowDetails(req.organizationId, req.params.id);
+  res.json({ success: true, details: result });
+});
+
+// ─── MONITORING ──────────────────────────────────────────────
+router.post('/monitor/scan', async (req, res) => {
+  const result = await complianceMonitoringService.runComplianceScan(req.organizationId, req.body.scanType);
+  res.json(result);
+});
+
+// ─── ANALYTICS ───────────────────────────────────────────────
+router.get('/analytics/trends', async (req, res) => {
+  const result = await complianceAnalyticsService.getHistoricalTrends(req.organizationId);
+  res.json(result);
 });
 
 export default router;

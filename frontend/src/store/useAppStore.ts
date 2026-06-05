@@ -347,19 +347,41 @@ export const useAppStore = create<AppState>((set, get) => ({
       }
     } catch (apiErr) {
       console.warn('Backend API offline. Falling back to local Google login simulation...');
+      const lowerEmail = email.toLowerCase();
+      let role: 'Employee' | 'EnterpriseAdmin' | 'SuperAdmin' | 'DepartmentManager' = 'Employee';
+      let designation = 'Software Developer';
+      let department = 'Engineering';
+
+      if (lowerEmail === 'manyaparikh23@gmail.com') {
+        role = 'SuperAdmin';
+        designation = 'Global Platform Admin';
+        department = 'System Operations';
+      } else {
+        const matched = get().employees.find(e => e.email.toLowerCase() === lowerEmail);
+        if (matched) {
+          role = matched.role as any;
+          designation = matched.designation || 'Consultant';
+          department = matched.department || 'Engineering';
+        } else if (lowerEmail.includes('admin') || lowerEmail.includes('alok')) {
+          role = 'EnterpriseAdmin';
+          designation = 'Director of IT';
+          department = 'Management';
+        }
+      }
+
       const loggedInUser: User = {
         id: 'google-user-' + Date.now(),
         name: name || email.split('@')[0].toUpperCase(),
         email: email,
-        role: 'Employee',
-        department: 'Engineering',
-        designation: 'Software Developer',
+        role: role,
+        department: department || undefined,
+        designation: designation,
         joiningDate: new Date().toISOString().split('T')[0],
         mobileNumber: '+91 99999 88888',
         skills: ['Cloud', 'React']
       };
       set({ user: loggedInUser });
-      get().addAuditLog('Login Successful', `User ${loggedInUser.name} logged in via Google (Local Mode).`);
+      get().addAuditLog('Login Successful', `User ${loggedInUser.name} logged in via Google (${role}) (Local Mode).`);
       get().addNotification(`Welcome back, ${loggedInUser.name}! (Google Local)`, 'success');
       return true;
     }

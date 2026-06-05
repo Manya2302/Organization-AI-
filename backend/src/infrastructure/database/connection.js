@@ -61,6 +61,23 @@ export const connectDB = async () => {
     client.release();
     isLocalJSONDb = false;
     logger.info(`Connected to: ${result.rows[0].version.split(',')[0]}`);
+    
+    // Auto-run Phase 4 workflows migration on startup
+    try {
+      const { migrateWorkflows } = await import('./migrate_compliance_workflows.js');
+      await migrateWorkflows();
+    } catch (migErr) {
+      logger.error('Workflows migration failed:', migErr);
+    }
+
+    // Auto-run Phase 5 Audit Copilot migration on startup
+    try {
+      const { migrateAuditCopilot } = await import('./migrate_phase5_audit_copilot.js');
+      await migrateAuditCopilot();
+    } catch (migErr) {
+      logger.error('Phase 5 migrations failed:', migErr);
+    }
+
     return pool;
   } catch (error) {
     logger.warn('⚠️ PostgreSQL offline. Initialized with Local JSON Database.');

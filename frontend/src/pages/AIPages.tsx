@@ -1755,7 +1755,7 @@ export const AIQueuePage: React.FC = () => {
           ))}
           {failures.length === 0 && (
             <div className="text-xs text-gray-500 py-3 text-center">
-              🎉 No current processing queue failures. Everything is running healthy.
+              No current processing queue failures. Everything is running healthy.
             </div>
           )}
         </div>

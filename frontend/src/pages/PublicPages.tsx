@@ -4,7 +4,8 @@ import { motion, AnimatePresence } from 'motion/react'
 import { 
   Shield, Lock, FileText, Search, Users, Sparkles, 
   ChevronDown, Check, ArrowRight, 
-  FileCheck, Layers, Cpu, Database, ExternalLink
+  FileCheck, Layers, Cpu, Database, ExternalLink,
+  UploadCloud, Network
 } from 'lucide-react'
 
 import MarqueeScroller from '../components/MarqueeScroller'
@@ -12,6 +13,73 @@ import AIChatBox from '../components/AIChatBox'
 import InteractiveMap from '../components/InteractiveMap'
 import CookieBanner from '../components/CookieBanner'
 import LoadingScreen from '../components/LoadingScreen'
+
+// ─── INTERACTIVE SYSTEM ARCHITECTURE FLOW DIAGRAM ──────────
+const InteractiveArchitecture: React.FC = () => {
+  const [activeNode, setActiveNode] = useState<string | null>('upload')
+
+  const nodes = [
+    { id: 'upload', label: '1. Secure Ingestion', desc: 'Secure enterprise-grade upload pipeline for PDF, docx, xlsx, or images with metadata extraction.', color: '#3b82f6', icon: UploadCloud },
+    { id: 'ocr', label: '2. PaddleOCR Engine', desc: 'Self-hosted layout-preserving optical character recognition with cell-level table extraction.', color: '#06b6d4', icon: FileText },
+    { id: 'vector', label: '3. ChromaDB Vector Space', desc: 'Sentence-transformer models map segments to dense coordinate vectors in real time.', color: '#8b5cf6', icon: Database },
+    { id: 'neo4j', label: '4. Neo4j Knowledge Graph', desc: 'preserve relationships, semantic links, departments ownership, and expert associations.', color: '#ec4899', icon: Network },
+    { id: 'llm', label: '5. Qwen3 Offline RAG', desc: 'Contextually scoped answers generated offline via self-hosted local Qwen LLM node.', color: '#10b981', icon: Cpu }
+  ]
+
+  return (
+    <div className="rounded-3xl border border-slate-200/50 dark:border-white/5 bg-white dark:bg-slate-900/40 backdrop-blur-md p-8 shadow-xl max-w-4xl mx-auto space-y-6 text-left">
+      <div className="space-y-2">
+        <span className="text-[10px] font-bold text-blue-600 dark:text-brand-secondary uppercase tracking-widest block font-mono">Enterprise Data Flow Architecture</span>
+        <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white leading-tight">Secure Vault Offline AI Pipeline</h3>
+        <p className="text-xs text-slate-500 dark:text-gray-400">Click any architecture module block to trace details about security, storage, and processing controls.</p>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 relative">
+        {nodes.map((node) => {
+          const isActive = activeNode === node.id
+          const IconComponent = node.icon
+          return (
+            <div 
+              key={node.id}
+              onClick={() => setActiveNode(node.id)}
+              className={`p-4 rounded-2xl border transition-all duration-300 cursor-pointer text-left flex flex-col justify-between h-40 ${
+                isActive 
+                  ? 'bg-slate-50 dark:bg-slate-950 border-slate-350 dark:border-white/10 shadow-lg' 
+                  : 'bg-white/50 dark:bg-white/5 border-slate-200 dark:border-white/5 opacity-60 hover:opacity-100'
+              }`}
+              style={{
+                borderColor: isActive ? node.color : undefined,
+                boxShadow: isActive ? `0 10px 30px ${node.color}15` : undefined
+              }}
+            >
+              <div className="p-2 rounded-xl bg-slate-100 dark:bg-white/5 w-fit">
+                <IconComponent className="h-6 w-6" style={{ color: node.color }} />
+              </div>
+              <div>
+                <h4 className="text-xs font-black text-slate-900 dark:text-white mt-2 leading-snug">{node.label}</h4>
+                <div className="w-6 h-1 rounded mt-1.5" style={{ backgroundColor: node.color }} />
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-250 dark:border-white/5 text-left transition-all duration-300 min-h-24">
+        {activeNode && (
+          <div className="space-y-1.5">
+            <h5 className="text-xs font-extrabold text-slate-950 dark:text-white flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: nodes.find(n => n.id === activeNode)?.color }} />
+              {nodes.find(n => n.id === activeNode)?.label}
+            </h5>
+            <p className="text-xs text-slate-650 dark:text-gray-400 leading-relaxed">
+              {nodes.find(n => n.id === activeNode)?.desc}
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
 
 // ─── 1. LANDING PAGE ───────────────────────────────────────
 let hasShownLoading = false
@@ -39,65 +107,67 @@ export const LandingPage: React.FC = () => {
 
       <div className="w-full flex-1 flex flex-col font-sans transition-colors duration-300">
         {/* HERO SECTION */}
-        <section className="w-full bg-[#f4f6fb] dark:bg-[#070b15] transition-colors duration-300 pt-28 pb-14 md:pt-32 md:pb-16 relative overflow-hidden">
+        <section className="w-full bg-[#f8fafc] dark:bg-[#030712] transition-colors duration-300 pt-28 pb-14 md:pt-32 md:pb-16 relative overflow-hidden">
           <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute -top-32 left-1/2 h-80 w-80 -translate-x-1/2 rounded-full bg-blue-200/50 blur-3xl" />
-            <div className="absolute top-24 right-[-5rem] h-72 w-72 rounded-full bg-amber-200/40 blur-3xl" />
-            <div className="absolute bottom-[-4rem] left-[-4rem] h-72 w-72 rounded-full bg-cyan-200/30 blur-3xl" />
+            <div className="absolute -top-32 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full bg-blue-500/10 dark:bg-blue-500/5 blur-3xl" />
+            <div className="absolute top-24 right-[-5rem] h-80 w-80 rounded-full bg-indigo-500/10 dark:bg-indigo-500/5 blur-3xl" />
+            <div className="absolute bottom-[-4rem] left-[-4rem] h-80 w-80 rounded-full bg-cyan-500/10 dark:bg-cyan-500/5 blur-3xl" />
           </div>
 
           <div className="max-w-[1200px] mx-auto px-6 md:px-10 lg:px-16 relative z-10">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
               <div className="lg:col-span-6 max-w-3xl space-y-8 text-left">
                 
-
                 <div className="space-y-5 max-w-xl">
-                  <h1 className="font-sans font-semibold tracking-tight text-[42px] md:text-[60px] lg:text-[66px] leading-[0.95] text-slate-950 dark:text-white">
-                    Design confidently.
+                  <div className="inline-flex items-center gap-1.5 text-blue-600 dark:text-blue-400 text-[10px] font-bold uppercase tracking-widest font-mono">
+                    <Sparkles className="h-3 w-3" /> SecureVault AI Phase 4 Active
+                  </div>
+                  <h1 className="font-sans font-black tracking-tight text-[44px] md:text-[62px] lg:text-[68px] leading-[0.9] text-slate-950 dark:text-white">
+                    Compliance <span className="bg-gradient-to-r from-blue-500 via-indigo-400 to-cyan-400 bg-clip-text text-transparent">Intelligence</span> & Audit Readiness.
                   </h1>
-                  <p className="text-[16px] md:text-[18px] text-slate-600 dark:text-slate-400 leading-8 max-w-xl font-normal">
-                    CogniVault gives teams a clean, modern home for documents, approvals, search, and AI insights without sacrificing control.
+                  <p className="text-[14px] md:text-[16px] text-slate-600 dark:text-slate-400 leading-normal max-w-xl font-medium">
+                    SecureVault AI gives modern enterprises a fully secure, local environment for classification, relationship maps, and dynamic compliance audits without third-party leakages.
                   </p>
                 </div>
 
                 <div className="flex flex-wrap gap-4 pt-1">
                   <Link
                     to="/register"
-                    className="inline-flex items-center gap-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-[14px] font-semibold px-6 py-3.5 shadow-lg shadow-blue-600/20 transition-all duration-300 cursor-pointer"
+                    className="inline-flex items-center gap-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-[13px] font-bold px-6 py-3.5 shadow-lg shadow-blue-600/20 transition-all duration-300 cursor-pointer"
                   >
-                    Get started free
-                    <ArrowRight size={16} />
+                    Deploy Control Tower
+                    <ArrowRight size={15} />
                   </Link>
                   <Link
                     to="/documentation"
-                    className="inline-flex items-center gap-2 rounded-full bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 text-[14px] font-semibold px-6 py-3.5 shadow-sm transition-all duration-300 cursor-pointer"
+                    className="inline-flex items-center gap-2 rounded-xl bg-white dark:bg-white/5 hover:bg-slate-50 dark:hover:bg-white/10 text-slate-700 dark:text-white border border-slate-350 dark:border-white/10 text-[13px] font-bold px-6 py-3.5 shadow-sm transition-all duration-300 cursor-pointer"
                   >
-                    View docs
+                    Technical Docs
                   </Link>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 max-w-xl">
+                <div className="grid grid-cols-3 gap-3 pt-2 max-w-xl">
                   {[
-                    ['99.9%', 'workspace availability'],
-                    ['<2s', 'typical response time'],
-                    ['24/7', 'audit visibility'],
+                    ['99.99%', 'NODE UP-TIME'],
+                    ['<1.8s', 'RAG RUNTIME'],
+                    ['ISO 27001', 'COMPLIANCE'],
                   ].map(([value, label]) => (
-                    <div key={label} className="rounded-2xl border border-slate-200 bg-white/90 p-4 shadow-sm backdrop-blur-sm">
-                      <div className="text-[26px] font-semibold tracking-tight text-slate-950">{value}</div>
-                      <div className="mt-1 text-[11px] uppercase tracking-[0.18em] text-slate-500">{label}</div>
+                    <div key={label} className="rounded-2xl border border-slate-200 dark:border-white/5 bg-white/70 dark:bg-slate-900/50 p-4 shadow-sm backdrop-blur-sm">
+                      <div className="text-[22px] font-black tracking-tight text-slate-950 dark:text-white">{value}</div>
+                      <div className="mt-1 text-[8px] font-bold uppercase tracking-widest text-slate-500 dark:text-gray-400">{label}</div>
                     </div>
                   ))}
                 </div>
               </div>
 
               <div className="lg:col-span-6 flex justify-center lg:justify-end">
-                <div className="w-full max-w-[680px] overflow-hidden rounded-[36px] shadow-[0_30px_90px_rgba(15,23,42,0.14)]">
-                  <div className="relative overflow-hidden rounded-[36px] border border-slate-200 bg-white">
-                    <div className="absolute inset-0 bg-gradient-to-br from-blue-500/8 via-transparent to-cyan-500/10" />
+                <div className="w-full max-w-[680px] overflow-hidden rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 p-2 shadow-2xl">
+                  <div className="relative overflow-hidden rounded-2xl bg-slate-950">
+                    <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-transparent to-cyan-500/10 z-10 pointer-events-none" />
                     <img
-                      src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1800&q=90"
-                      alt="Professional team member working at a desk"
-                      className="relative z-10 block w-full h-[470px] object-cover object-center select-none"
+                      src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1200&q=90"
+                      alt="Digital networking architecture data flow visualization"
+                      className="block w-full h-[380px] object-cover object-center select-none opacity-80"
                     />
                   </div>
                 </div>
@@ -196,6 +266,11 @@ export const LandingPage: React.FC = () => {
                 </div>
               </div>
             </div>
+          </section>
+
+          {/* SECTION: ARCHITECTURE DIAGRAM */}
+          <section className="space-y-8">
+            <InteractiveArchitecture />
           </section>
 
           {/* SECTION 2: INTERACTIVE AI CHAT DEMO */}

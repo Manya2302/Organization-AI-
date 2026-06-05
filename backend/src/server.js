@@ -38,6 +38,11 @@ import knowledgeRoutes from './api/routes/knowledge.routes.js';
 import graphRoutes from './api/routes/graph.routes.js';
 import memoryRoutes from './api/routes/memory.routes.js';
 import complianceRoutes from './api/routes/compliance.routes.js';
+import auditCopilotRoutes from './api/routes/auditCopilot.routes.js';
+import aiGovernanceRoutes from './api/routes/aiGovernance.routes.js';
+import aeopRoutes from './api/routes/aeop.routes.js';
+import digitalTwinRoutes from './api/routes/digitalTwin.routes.js';
+import commercialRoutes from './api/routes/commercial.routes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -86,8 +91,8 @@ app.get('/health', async (req, res) => {
   res.json({
     status: 'operational',
     timestamp: new Date().toISOString(),
-    version: '4.0.0',
-    phase: 'Phase 4 — Compliance Intelligence & Audit Readiness',
+    version: '6.0.0',
+    phase: 'Phase 6 — Enterprise AI Governance & AI Control Plane',
     environment: process.env.NODE_ENV,
     services: {
       database: dbConnected ? 'connected' : 'disconnected',
@@ -113,6 +118,11 @@ app.use('/api/v1/knowledge', knowledgeRoutes);
 app.use('/api/v1/graph', graphRoutes);
 app.use('/api/v1/memory', memoryRoutes);
 app.use('/api/v1/compliance', complianceRoutes);
+app.use('/api/v1/audit/copilot', auditCopilotRoutes);
+app.use('/api/v1/ai/governance', aiGovernanceRoutes);
+app.use('/api/v1/operations', aeopRoutes);
+app.use('/api/v1', digitalTwinRoutes);
+app.use('/api/v1/commercial', commercialRoutes);
 
 // ────────── 404 Handler ──────────
 app.use('*', (req, res) => {

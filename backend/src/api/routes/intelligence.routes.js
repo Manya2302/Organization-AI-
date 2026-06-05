@@ -40,6 +40,19 @@ import {
   getEntityDeduplication,
   getValidationLogsController
 } from '../controllers/intelligence.controller.js';
+import {
+  getKnowledgeFabric,
+  getEntities,
+  getRelationships,
+  getDecisions,
+  createDecision,
+  getExecutiveReport,
+  getPredictions,
+  getWorkforceSummary,
+  getVendors,
+  getProjects,
+  getDigitalTwinSnapshot
+} from '../controllers/eios.controller.js';
 import { authenticate } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
@@ -95,5 +108,18 @@ router.get('/relationships/:documentId', getDocumentRelationshipsHandler);
 router.get('/similar/:docId', getSimilarDocuments);
 router.get('/duplicates', scanDuplicates);
 router.get('/sensitivity/:documentId', getSensitivity);
+
+// ── Phase 7 Enterprise Intelligence OS (EIOS) Endpoints ──
+router.get('/fabric', getKnowledgeFabric);
+router.get('/entities', getEntities);
+router.get('/relationships', getRelationships);
+router.get('/decisions', getDecisions);
+router.post('/decisions', createDecision);
+router.get('/executive', getExecutiveReport);
+router.get('/predictions', getPredictions);
+router.get('/workforce', getWorkforceSummary);
+router.get('/vendors', getVendors);
+router.get('/projects', getProjects);
+router.get('/digital-twin', getDigitalTwinSnapshot);
 
 export default router;

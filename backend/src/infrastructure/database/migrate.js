@@ -234,7 +234,7 @@ const migrations = [
 const runMigrations = async () => {
   try {
     await connectDB();
-    logger.info('🗄️  Running SecureVault AI database migrations...');
+    logger.info('🗄️  Running SecureVault AI database migrations (Phases 1-6)...');
 
     for (let i = 0; i < migrations.length; i++) {
       const sql = migrations[i];
@@ -247,7 +247,52 @@ const runMigrations = async () => {
       }
     }
 
-    logger.info('✅ All migrations complete! SecureVault AI schema ready.');
+    // Phase 6 AI Governance tables
+    try {
+      const { migrateAIGovernance } = await import('./migrate_phase6_ai_governance.js');
+      await migrateAIGovernance();
+      logger.info('✅ Phase 6 AI Governance tables ready.');
+    } catch (err) {
+      logger.warn('⚠️  Phase 6 migration warning (tables may already exist):', err.message);
+    }
+
+    // Phase 7 EIOS tables
+    try {
+      const { migrateEIOS } = await import('./migrate_phase7_eios.js');
+      await migrateEIOS();
+      logger.info('✅ Phase 7 EIOS tables ready.');
+    } catch (err) {
+      logger.warn('⚠️  Phase 7 migration warning (tables may already exist):', err.message);
+    }
+
+    // Phase 8 AEOP tables
+    try {
+      const { migrateAEOP } = await import('./migrate_phase8_aeop.js');
+      await migrateAEOP();
+      logger.info('✅ Phase 8 AEOP tables ready.');
+    } catch (err) {
+      logger.warn('⚠️  Phase 8 migration warning (tables may already exist):', err.message);
+    }
+
+    // Phase 9 Digital Twin tables
+    try {
+      const { migratePhase9DigitalTwin } = await import('./migrate_phase9_digital_twin.js');
+      await migratePhase9DigitalTwin();
+      logger.info('✅ Phase 9 Digital Twin & Strategy tables ready.');
+    } catch (err) {
+      logger.warn('⚠️  Phase 9 migration warning (tables may already exist):', err.message);
+    }
+
+    // Phase 10 Commercialization & scale tables
+    try {
+      const { migrateCommercialization } = await import('./migrate_commercialization.js');
+      await migrateCommercialization();
+      logger.info('✅ Phase 10 Commercialization & Global Scale tables ready.');
+    } catch (err) {
+      logger.warn('⚠️  Phase 10 migration warning (tables may already exist):', err.message);
+    }
+
+    logger.info('✅ All migrations complete! SecureVault AI Phase 10 schema ready.');
     process.exit(0);
   } catch (error) {
     logger.error('❌ Migration failed:', error);

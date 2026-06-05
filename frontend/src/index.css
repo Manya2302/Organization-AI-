@@ -4,6 +4,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&family=Instrument+Serif:ital,wght@0,400;1,400&display=swap');
 
 @import "tailwindcss";
+@import "./design-system/tokens.css";
 
 @variant dark (&:where(.dark, .dark *));
 
@@ -269,29 +270,22 @@ html.dark body {
   border-color: rgba(26, 86, 219, 0.4);
 }
 
-/* ── Badge ─────────────────────────────────────────────── */
 .badge-brand {
-  background: rgba(26, 86, 219, 0.12);
-  border: 1px solid rgba(26, 86, 219, 0.3);
-  color: #93c5fd;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
+  color: #60a5fa;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
   text-transform: uppercase;
-  padding: 4px 12px;
-  border-radius: 9999px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 .badge-gold {
-  background: rgba(245, 158, 11, 0.1);
-  border: 1px solid rgba(245, 158, 11, 0.25);
-  color: #fcd34d;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
+  color: #fbbf24;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
   text-transform: uppercase;
-  padding: 4px 12px;
-  border-radius: 9999px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 /* ══════════════════════════════════════════════════════

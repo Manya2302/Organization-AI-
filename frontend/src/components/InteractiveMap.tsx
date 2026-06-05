@@ -94,7 +94,7 @@ export const InteractiveMap: React.FC = () => {
       <div className="flex flex-col justify-between">
         <div className="space-y-6">
           <div>
-            <span className="badge-brand text-[10px] mb-2 bg-blue-500/10 border-blue-500/20 text-blue-600 dark:text-blue-400">Node Selected</span>
+            <span className="badge-brand block mb-2">Node Selected</span>
             <h3 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
               <Server className="w-5 h-5 text-blue-500" />
               {selectedNode.city} Node

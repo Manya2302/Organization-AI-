@@ -201,19 +201,22 @@ export class AuthService {
     }
 
     // Verify Organization ID for Enterprise Admin
-    if (role === 'EnterpriseAdmin' && organizationId) {
+    if (role === 'EnterpriseAdmin') {
+      if (!organizationId || !organizationId.trim()) {
+        return { success: false, message: 'Organization ID is required.' };
+      }
       let orgResult = null;
+      const cleanOrgId = organizationId.trim();
       if (isLocalJSONDb) {
         const orgs = await readTable('organizations');
-        orgResult = orgs.find(o => o.id === organizationId || o.slug === organizationId.toLowerCase().trim());
+        orgResult = orgs.find(o => o.id === cleanOrgId || o.slug === cleanOrgId.toLowerCase());
       } else {
-        // Try to match UUID first (using a safe regex or try/catch)
-        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(organizationId);
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanOrgId);
         let queryStr = 'SELECT * FROM organizations WHERE slug = $1';
-        let queryParams = [organizationId.toLowerCase().trim()];
+        let queryParams = [cleanOrgId.toLowerCase()];
         if (isUuid) {
           queryStr = 'SELECT * FROM organizations WHERE id = $1 OR slug = $2';
-          queryParams = [organizationId, organizationId.toLowerCase().trim()];
+          queryParams = [cleanOrgId, cleanOrgId.toLowerCase()];
         }
         const dbRes = await query(queryStr, queryParams);
         orgResult = dbRes.rows[0];
@@ -229,7 +232,10 @@ export class AuthService {
     }
 
     // Verify Employee ID for Employee/Manager roles
-    if ((role === 'Employee' || role === 'DepartmentManager') && employeeId) {
+    if (role === 'Employee' || role === 'DepartmentManager') {
+      if (!employeeId || !employeeId.trim()) {
+        return { success: false, message: 'Employee ID is required.' };
+      }
       if (!rawUser.employee_id || rawUser.employee_id.toLowerCase().trim() !== employeeId.toLowerCase().trim()) {
         return { success: false, message: 'Invalid Employee ID.' };
       }
