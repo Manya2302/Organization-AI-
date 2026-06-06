@@ -26,7 +26,7 @@ SecureVault AI is designed for organizations that need to:
 ## 2) Repository structure
 
 ```text
-Organization-AI-/
+<repository-root>/
 ├── README.md
 ├── docker-compose.yml
 ├── backend/
@@ -185,7 +185,7 @@ This phased design reflects growth from document platform → intelligence/gover
 
 ### Option A: Docker-backed services + local apps
 ```bash
-cd Organization-AI-
+cd <repository-root>
 docker-compose up -d postgres chromadb
 
 # Terminal 1
@@ -201,7 +201,7 @@ npm run dev
 
 ### Option B: Full manual
 ```bash
-cd Organization-AI-/backend
+cd <repository-root>/backend
 cp .env.example .env
 npm install
 npm run migrate
