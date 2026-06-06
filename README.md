@@ -63,17 +63,7 @@ docker run -d -p 8000:8000 -v chromadb_data:/chroma/chroma chromadb/chroma
 
 ---
 
-## 🔐 Demo Login Credentials
 
-| Role | Email | Password | Identifier Required (Org ID / Employee ID) |
-|------|-------|----------|---------------------------------------------|
-| **Super Admin** | `manyaparikh23@gmail.com` | `SecureVault@Super2026` | *None* |
-| **Enterprise Admin** | `parikhgaming@gmail.com` | `SecureVault@Admin2026` | **Organization ID / Slug**: `acme-tech-solutions` |
-| **Employee** | `theamazingexperience57@gmail.com` | `SecureVault@Emp2026` | **Employee ID**: `EMP002` |
-
-> **OTP for development**: Any 6-digit code (e.g. `123456`) or copy from the backend console log output.
-
----
 
 ## 📡 API Endpoints Reference
 
