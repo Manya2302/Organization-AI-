@@ -177,10 +177,10 @@ This phased design reflects growth from document platform → intelligence/gover
 
 ## 9) Local setup
 
-## Prerequisites
+### Prerequisites
 - Node.js 20+
 - PostgreSQL 15+
-- Docker + Docker Compose
+- Docker and Docker Compose
 - Ollama (for local AI features)
 
 ### Option A: Docker-backed services + local apps
