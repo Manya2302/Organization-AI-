@@ -26,7 +26,7 @@ SecureVault AI is designed for organizations that need to:
 ## 2) Repository structure
 
 ```text
-/tmp/workspace/Manya2302/Organization-AI-/
+Organization-AI-/
 ├── README.md
 ├── docker-compose.yml
 ├── backend/
@@ -185,30 +185,30 @@ This phased design reflects growth from document platform → intelligence/gover
 
 ### Option A: Docker-backed services + local apps
 ```bash
-cd /tmp/workspace/Manya2302/Organization-AI-
+cd Organization-AI-
 docker-compose up -d postgres chromadb
 
 # Terminal 1
-cd /tmp/workspace/Manya2302/Organization-AI-/backend
+cd backend
 npm install
 npm run dev
 
 # Terminal 2
-cd /tmp/workspace/Manya2302/Organization-AI-/frontend
+cd frontend
 npm install
 npm run dev
 ```
 
 ### Option B: Full manual
 ```bash
-cd /tmp/workspace/Manya2302/Organization-AI-/backend
+cd Organization-AI-/backend
 cp .env.example .env
 npm install
 npm run migrate
 npm run seed
 npm run dev
 
-cd /tmp/workspace/Manya2302/Organization-AI-/frontend
+cd ../frontend
 npm install
 npm run dev
 ```
@@ -261,4 +261,3 @@ For client demos, prioritize flows in this order:
 - Compliance/Audit readiness dashboards
 - AI governance and trust/risk controls
 - Commercial connector and subscription views
-
