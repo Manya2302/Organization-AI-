@@ -1,201 +1,264 @@
-# SecureVault AI — Project README
-## Enterprise Intelligence Operating System | Phase 1
+# SecureVault AI — Enterprise Intelligence & Control Platform
+
+SecureVault AI is a full-stack enterprise platform for secure document operations, AI-assisted intelligence, compliance automation, audit readiness, and digital twin strategy simulation.
+
+This repository contains:
+- **Frontend**: React 19 + TypeScript + Vite + Tailwind
+- **Backend**: Node.js + Express + PostgreSQL + Clean Architecture
+- **AI stack**: Ollama (LLM + embeddings), ChromaDB (vector search), OCR pipeline
+- **Deployment support**: Docker Compose for local/self-hosted infrastructure
 
 ---
 
-## 🚀 Quick Start
+## 1) What this platform is used for
 
-### Prerequisites
-- Node.js v20+
-- PostgreSQL 15+  
-- Docker & Docker Compose (recommended)
-- Ollama (for AI features): https://ollama.ai
+SecureVault AI is designed for organizations that need to:
+- Centralize business documents with controlled access and audit trails
+- Run OCR, semantic search, and AI chat over organizational knowledge
+- Track compliance controls, evidence, readiness, and audits
+- Govern enterprise AI usage (model registry, prompt governance, trust/risk)
+- Run autonomous operations workflows, recommendations, and command-center views
+- Model business dependencies and strategic scenarios via a digital twin layer
+- Configure commercial scale capabilities (integrations, marketplace, billing, white-label)
 
-### Option A: Docker (Recommended — Zero Config)
+---
+
+## 2) Repository structure
+
+```text
+/tmp/workspace/Manya2302/Organization-AI-/
+├── README.md
+├── docker-compose.yml
+├── backend/
+│   ├── Dockerfile
+│   ├── .env.example
+│   └── src/
+│       ├── server.js
+│       ├── api/                # routes, controllers, middleware
+│       ├── application/        # domain services (compliance, governance, twin, etc.)
+│       ├── core/               # entities
+│       └── infrastructure/     # database, repositories, AI, jobs, logging, email
+└── frontend/
+    ├── package.json
+    ├── vite.config.ts
+    └── src/
+        ├── App.tsx
+        ├── lib/apiClient.ts
+        ├── pages/              # public, auth, dashboard module pages
+        ├── components/
+        ├── design-system/
+        └── store/useAppStore.ts
+```
+
+---
+
+## 3) Core modules in backend
+
+Main API boot file: `backend/src/server.js`
+
+### Platform API domains
+Mounted under `/api/v1/*`:
+- `auth` (OTP/JWT auth, registration, password flows, Google login endpoint)
+- `documents` (upload, versioning, download, soft delete/restore)
+- `employees`, `organizations`, `audit`
+- `ai`, `ocr`, `search`, `analytics`
+- `intelligence`, `knowledge`, `graph`, `memory`
+- `compliance`, `audit/copilot`, `ai/governance`
+- `operations` (AEOP)
+- `digital twin` routes
+- `commercial` (connectors, subscription, marketplace, infra/security operations)
+
+### Service architecture highlights
+`backend/src/application/services/` includes enterprise modules such as:
+- AI governance services (models, prompt security, approvals, trust, risk)
+- Compliance services (controls, evidence, mappings, reporting, workflows)
+- Audit copilot services (planning, findings, readiness, remediation, packaging)
+- EIOS/knowledge graph services (memory freshness/ownership/risk, experts, timelines)
+- AEOP services (workflows, actions, recommendations, outcomes, command center)
+- Digital twin + strategy services (simulation, forecasting, resilience, war-room)
+- Commercial ecosystem services (integrations, subscriptions, white-label, plugins, infra)
+
+---
+
+## 4) Frontend experience
+
+Entry and routing:
+- `frontend/src/App.tsx` handles public/auth/dashboard routing
+- `frontend/src/pages/DashboardPages.tsx` organizes the major product workspaces
+
+Dashboard includes client-facing workspaces for:
+- Documents & analytics
+- Knowledge center and graph exploration
+- Compliance and audit copilot
+- AI governance and explainability
+- Enterprise intelligence OS
+- Autonomous operations
+- Cognitive digital twin strategy
+- Commercial/integration ecosystem
+
+API integration in frontend:
+- `frontend/src/lib/apiClient.ts` provides typed wrappers for key backend domains
+
+---
+
+## 5) Document pipeline (how documents are used)
+
+The document lifecycle is implemented across document routes/controllers, worker jobs, repositories, OCR services, and AI services.
+
+### End-to-end flow
+1. **Upload** via `/api/v1/documents` (Multer-based file handling)
+2. **Store metadata** in PostgreSQL (`documents`, `document_versions`)
+3. **Queue processing** through OCR/AI queue (`ocr_queue`, worker services)
+4. **OCR extraction** via `OCRService` (Paddle OCR API with fallback logic)
+5. **Indexing** into vector layer (Chroma service) + DB metadata update
+6. **Discovery** via hybrid search (`/api/v1/search`) and related AI/intelligence APIs
+7. **Usage in AI chat** through `/api/v1/ai/chat` and intelligence features
+8. **Governance visibility** through audit/compliance/readiness modules
+
+Supported upload types are defined in `backend/.env.example`.
+
+---
+
+## 6) Integrations with other apps/services
+
+### Infrastructure integrations
+- **PostgreSQL** (primary relational store)
+- **ChromaDB** (vector DB)
+- **Ollama** (local LLM + embeddings)
+- **Redis (optional)** for queue support/fallback queue mode
+- **SMTP (optional)** via Nodemailer (`EmailService`) for OTP/email workflows
+- **Neo4j hooks present** in service layer for graph-health/sync-related capabilities
+
+### Commercial connector ecosystem
+Commercial services and migrations define connector support for platforms such as:
+- SharePoint
+- OneDrive
+- Google Drive
+- Jira
+- ServiceNow
+- SAP
+- Salesforce
+- Slack
+- Teams
+- GitHub
+
+These are managed through `/api/v1/commercial/connectors*` endpoints and related service logic.
+
+---
+
+## 7) Security model
+
+Implemented via middleware/services in backend:
+- Helmet security headers
+- CORS with controlled origin
+- JWT auth + refresh token handling
+- OTP verification workflows
+- Role-based access control (SuperAdmin, EnterpriseAdmin, DepartmentManager, Employee)
+- API rate limiting (global + auth-specific)
+- Audit logging for critical actions
+
+---
+
+## 8) Database phases and schema expansion
+
+Migration orchestration is in `backend/src/infrastructure/database/migrate.js`.
+
+Current migration progression in code:
+- Phase 1: Core auth/document/audit/AI tables
+- Phase 6: AI governance schema
+- Phase 7: Enterprise intelligence OS schema
+- Phase 8: AEOP schema
+- Phase 9: Digital twin and strategy schema
+- Phase 10: Commercialization and global scale schema
+
+This phased design reflects growth from document platform → intelligence/governance → operations/twin → enterprise scale.
+
+---
+
+## 9) Local setup
+
+## Prerequisites
+- Node.js 20+
+- PostgreSQL 15+
+- Docker + Docker Compose
+- Ollama (for local AI features)
+
+### Option A: Docker-backed services + local apps
 ```bash
-# Start PostgreSQL + ChromaDB
+cd /tmp/workspace/Manya2302/Organization-AI-
 docker-compose up -d postgres chromadb
 
-# Start backend
-cd backend && npm run dev
-
-# Start frontend (separate terminal)
-cd frontend && npm run dev
-```
-
-### Option B: Manual Setup
-
-#### 1. Configure Backend
-```bash
-cd backend
-cp .env.example .env
-# Edit .env with your PostgreSQL credentials
+# Terminal 1
+cd /tmp/workspace/Manya2302/Organization-AI-/backend
 npm install
-npm run migrate      # Create database schema
-npm run seed         # Load demo data
-npm run dev          # Start API server
-```
+npm run dev
 
-#### 2. Configure Frontend
-```bash
-cd frontend
-# .env already set to http://localhost:5000/api/v1
+# Terminal 2
+cd /tmp/workspace/Manya2302/Organization-AI-/frontend
 npm install
 npm run dev
 ```
 
----
+### Option B: Full manual
+```bash
+cd /tmp/workspace/Manya2302/Organization-AI-/backend
+cp .env.example .env
+npm install
+npm run migrate
+npm run seed
+npm run dev
 
-## 🤖 AI Features Setup (Local — Zero Cost)
+cd /tmp/workspace/Manya2302/Organization-AI-/frontend
+npm install
+npm run dev
+```
 
-### Install Ollama
-Download from https://ollama.ai and run:
+### Ollama setup
 ```bash
 ollama serve
-ollama pull qwen3:8b          # LLM for RAG responses
-ollama pull nomic-embed-text  # Embedding model for vector search
-```
-
-### ChromaDB (Vector Store)
-```bash
-docker run -d -p 8000:8000 -v chromadb_data:/chroma/chroma chromadb/chroma
+ollama pull qwen3:8b
+ollama pull nomic-embed-text
 ```
 
 ---
 
-## 🔐 Demo Login Credentials
+## 10) Build/lint commands available
 
-| Role | Email | Password | Identifier Required (Org ID / Employee ID) |
-|------|-------|----------|---------------------------------------------|
-| **Super Admin** | `manyaparikh23@gmail.com` | `SecureVault@Super2026` | *None* |
-| **Enterprise Admin** | `parikhgaming@gmail.com` | `SecureVault@Admin2026` | **Organization ID / Slug**: `acme-tech-solutions` |
-| **Employee** | `theamazingexperience57@gmail.com` | `SecureVault@Emp2026` | **Employee ID**: `EMP002` |
+Frontend (`frontend/package.json`):
+- `npm run dev`
+- `npm run build`
+- `npm run lint`
+- `npm run preview`
 
-> **OTP for development**: Any 6-digit code (e.g. `123456`) or copy from the backend console log output.
-
----
-
-## 📡 API Endpoints Reference
-
-### Authentication
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/v1/auth/send-otp` | Generate verification OTP |
-| POST | `/api/v1/auth/login` | Login + get JWT |
-| POST | `/api/v1/auth/register-organization` | Register new org |
-| POST | `/api/v1/auth/register-employee` | Employee self-register |
-| POST | `/api/v1/auth/forgot-password` | Initiate password reset |
-| POST | `/api/v1/auth/reset-password` | Complete password reset |
-| GET  | `/api/v1/auth/me` | Get current user |
-| POST | `/api/v1/auth/logout` | Revoke session |
-
-### Documents
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/v1/documents` | List documents (filtered) |
-| POST | `/api/v1/documents` | Upload new document |
-| GET | `/api/v1/documents/:id` | Get document + OCR + versions |
-| GET | `/api/v1/documents/:id/download` | Secure file download |
-| POST | `/api/v1/documents/:id/version` | Upload new version |
-| DELETE | `/api/v1/documents/:id` | Soft delete (trash) |
-| PATCH | `/api/v1/documents/:id/restore` | Restore from trash |
-
-### AI Copilot
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/v1/ai/status` | Ollama + ChromaDB health |
-| POST | `/api/v1/ai/chat` | RAG chat query |
-| GET | `/api/v1/ai/sessions` | Chat history |
-
-### Search
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/v1/search?q=...&type=hybrid` | Full-text + semantic search |
-
-### Analytics
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/v1/analytics/overview` | Dashboard overview data |
-| GET | `/api/v1/analytics/upload-trends` | Upload activity chart data |
+Backend (`backend/package.json`):
+- `npm run dev`
+- `npm run start`
+- `npm run migrate`
+- `npm run seed`
 
 ---
 
-## 🏗️ Architecture
+## 11) Deployment notes
 
-```
-SecureVaultAI/
-├── frontend/                     # React 19 + TypeScript + Vite + Tailwind v4
-│   └── src/
-│       ├── lib/apiClient.ts      # ← Typed API client for backend integration
-│       ├── store/useAppStore.ts  # Zustand state management
-│       ├── pages/
-│       │   ├── DashboardPages.tsx
-│       │   ├── AuthPages.tsx
-│       │   └── PublicPages.tsx
-│       └── components/
-│
-└── backend/                      # Node.js + Express Clean Architecture
-    └── src/
-        ├── server.js             # Entry point
-        ├── core/entities/        # Domain models (User, Document, AuditLog)
-        ├── application/services/ # Business logic (AuthService)
-        ├── infrastructure/
-        │   ├── database/         # PostgreSQL pool + migrations + seed
-        │   ├── repositories/     # Data access layer
-        │   ├── ai/               # Ollama + ChromaDB + OCR services
-        │   └── logging/          # Winston logger
-        └── api/
-            ├── middleware/       # auth, errorHandler, rateLimiter
-            ├── controllers/      # Request handlers
-            └── routes/           # Express route definitions
-```
+- `docker-compose.yml` includes services for `postgres`, `chromadb`, and `backend`
+- Backend container healthcheck targets `/health`
+- Backend Docker image runs as a non-root user
+- Uploads/logs are persisted through mounted volumes
 
 ---
 
-## 🔒 Security Architecture
+## 12) Client handover summary
 
-- **JWT Authentication**: Short-lived access tokens (24h) + rotating refresh tokens (7d)
-- **RBAC**: SuperAdmin → EnterpriseAdmin → DepartmentManager → Employee
-- **OTP Verification**: 2-factor auth on login and registration
-- **Rate Limiting**: 100 req/15min global, 10 req/15min for auth routes
-- **Password Hashing**: bcrypt with 12 rounds
-- **Data Sovereignty**: Zero cloud data transmission — all AI runs locally
-- **Audit Trail**: Immutable PostgreSQL log for every action
+This repository is already structured as a modular enterprise platform and can be presented to clients as:
+1. **A secure document intelligence base layer**
+2. **An AI-governed compliance and audit operating system**
+3. **An operations + strategy command platform (AEOP + Digital Twin)**
+4. **A commercialization-ready ecosystem with integration and scaling controls**
 
----
+For client demos, prioritize flows in this order:
+- Auth + role login
+- Document upload → OCR → search → AI response
+- Compliance/Audit readiness dashboards
+- AI governance and trust/risk controls
+- Commercial connector and subscription views
 
-## 📋 Phase 1 Completion Checklist
-
-### ✅ Frontend (React 19 + Vite + Tailwind v4)
-- [x] Full navigation router (11 public pages + auth + dashboard)
-- [x] Midnight Premium design system (glassmorphism, dark theme)
-- [x] Dashboard analytics with Recharts visualizations
-- [x] Document repository with CRUD + versioning + OCR preview
-- [x] Team management with RBAC controls
-- [x] Security audit log viewer
-- [x] AI Copilot floating chat interface
-- [x] Profile & settings management
-- [x] Typed API client (`src/lib/apiClient.ts`) wired to backend
-
-### ✅ Backend (Node.js + Express Clean Architecture)
-- [x] PostgreSQL schema (12 tables: orgs, users, docs, audit, AI sessions, OCR queue)
-- [x] JWT auth with OTP 2FA and refresh token rotation
-- [x] Full document CRUD with Multer file upload
-- [x] Async OCR pipeline (PaddleOCR + smart fallback)
-- [x] Ollama local LLM integration (RAG chat)
-- [x] ChromaDB vector indexing + semantic search
-- [x] PostgreSQL full-text search fallback
-- [x] Immutable audit logging on every action
-- [x] Analytics endpoints for dashboard telemetry
-- [x] Rate limiting + helmet security headers
-- [x] Winston structured logging
-- [x] Docker Compose for full infrastructure
-
-### ⏳ Next: Phase 2 Priorities
-- [ ] Real-time notifications via WebSocket
-- [ ] Email integration (OTP delivery, document share notifications)
-- [ ] Compliance automation workflows (DPDP/ISO 27001 templates)
-- [ ] Organizational memory graph visualization
-- [ ] AI governance dashboard (model usage tracking, response quality scores)
-- [ ] Vendor contract intelligence (renewal alerts, clause extraction)
-- [ ] Mobile PWA packaging
